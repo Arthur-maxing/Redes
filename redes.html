@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIMULACRO — Deepfakes, cyberbullying e linha de defesa</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230B0D12'/><circle cx='16' cy='13' r='8' fill='none' stroke='%234E7CFF' stroke-width='1.5'/><circle cx='13' cy='12' r='1.2' fill='%23E9ECF4'/><circle cx='19' cy='12' r='1.2' fill='%23E9ECF4'/><path d='M12 18q4 3 8 0' fill='none' stroke='%23E9ECF4' stroke-width='1.2'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- CORREÇÃO: fontes carregam de forma NÃO bloqueante (media="print" → "all").
+     Se o CDN falhar ou estiver offline, o site renderiza na hora com as fontes de reserva. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Archivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Archivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
+<style>
+/* ============ TOKENS (com pilhas de reserva local) ============ */
+:root{
+  --bg:#0B0D12; --bg2:#0F1219; --panel:#12151D; --panel2:#161A24;
+  --ink:#E9ECF4; --mut:#98A1B3; --dim:#6B7488;
+  --line:rgba(233,236,244,.13); --line2:rgba(233,236,244,.07);
+  --azul:#4E7CFF; --azul2:#9DB9FF; --azul-d:#0E1E44;
+  --coral:#FF5A4E; --coral-d:#3A1410;
+  --serif:"Fraunces","Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Archivo","Avenir Next","Segoe UI",Tahoma,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code",Consolas,"Roboto Mono","Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--azul);color:#05070C}
+img,canvas,video{display:block;max-width:100%}
+svg{flex-shrink:0}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+section{scroll-margin-top:72px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono)}
+.mlabel{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--azul2)}
+.hair{border-top:1px solid var(--line)}
+:focus-visible{outline:2px solid var(--azul);outline-offset:3px}
+
+/* ============ READ BAR / HEADER ============ */
+#readbar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--azul);z-index:60}
+header{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;align-items:center;background:rgba(11,13,18,.78);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{width:100%;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--serif);font-size:22px;font-weight:500;letter-spacing:.01em}
+.logo em{font-style:italic;color:var(--azul2)}
+.logo sup{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.2em;margin-left:6px}
+nav.desk{display:flex;gap:26px}
+nav.desk a{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);position:relative;padding:4px 0;transition:color .25s}
+nav.desk a::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:0;background:var(--azul);transition:width .3s}
+nav.desk a:hover,nav.desk a.on{color:var(--ink)}
+nav.desk a.on::after{width:100%}
+#menuBtn{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--ink);border:1px solid var(--line);padding:7px 13px}
+#mobileNav{position:fixed;inset:64px 0 0 0;background:var(--bg);z-index:49;display:none;flex-direction:column;gap:6px;padding:40px 28px}
+#mobileNav.open{display:flex}
+#mobileNav a{font-family:var(--serif);font-size:34px;padding:12px 0;border-bottom:1px solid var(--line2)}
+#mobileNav a span{font-family:var(--mono);font-size:11px;color:var(--azul);margin-right:14px;vertical-align:middle}
+
+/* ============ BOTÕES ============ */
+.btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;padding:13px 22px;border:1px solid var(--line);color:var(--ink);transition:background .25s,color .25s,border-color .25s}
+.btn:hover{background:var(--panel2);border-color:var(--azul)}
+.btn-solid{background:var(--azul);border-color:var(--azul);color:#05070C}
+.btn-solid:hover{background:var(--azul2);border-color:var(--azul2);color:#05070C}
+.btn-danger{border-color:rgba(255,90,78,.5);color:var(--coral)}
+.btn-danger:hover{background:var(--coral-d);border-color:var(--coral)}
+.btn svg{width:15px;height:15px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+/* ============ HERO ============ */
+#hero{min-height:100vh;display:flex;align-items:center;padding:110px 0 60px;position:relative}
+.hero-grid{display:grid;grid-template-columns:5fr 6fr;gap:56px;align-items:center;width:100%}
+#hero h1{font-family:var(--serif);font-weight:380;font-size:clamp(42px,5.6vw,74px);line-height:1.06;letter-spacing:-.01em}
+#hero h1 em{font-style:italic;color:var(--azul2)}
+#hero h1 .strike{position:relative;white-space:nowrap}
+#hero h1 .strike::after{content:"";position:absolute;left:-2%;right:-2%;top:54%;height:2px;background:var(--coral);transform:scaleX(0);transform-origin:left;animation:strike 1.2s .9s cubic-bezier(.7,0,.2,1) forwards}
+@keyframes strike{to{transform:scaleX(1)}}
+.hero-sub{color:var(--mut);font-size:17px;max-width:46ch;margin:26px 0 34px}
+.hero-sub strong{color:var(--ink);font-weight:500}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.hero-note{margin-top:34px;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em}
+#heroBox{position:relative;border:1px solid var(--line);background:var(--bg2);aspect-ratio:4/4.6;max-height:640px;cursor:none;overflow:hidden}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%}
+.hud{position:absolute;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--dim);pointer-events:none;text-transform:uppercase}
+.hud-tl{top:14px;left:16px}
+.hud-bl{bottom:14px;left:16px;display:flex;align-items:center;gap:8px}
+.hud-br{bottom:14px;right:16px;text-align:right}
+#hudState{color:var(--azul2)}
+#hudState.synthetic{color:var(--coral)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--azul);animation:pulse 1.4s infinite}
+.dot.synthetic{background:var(--coral)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+#confWrap{width:120px;height:3px;background:var(--line);margin-top:5px;margin-left:auto}
+#confFill{height:100%;width:0;background:var(--azul);transition:width .8s}
+#confFill.synthetic{background:var(--coral)}
+#glitchBtn{position:absolute;top:14px;right:14px;z-index:2;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);padding:6px 10px;background:rgba(11,13,18,.6);cursor:pointer;transition:.25s}
+#glitchBtn:hover{color:var(--ink);border-color:var(--azul)}
+#cross{position:absolute;width:26px;height:26px;pointer-events:none;z-index:2;opacity:0;transition:opacity .2s}
+#cross::before,#cross::after{content:"";position:absolute;background:var(--azul2)}
+#cross::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-.5px)}
+#cross::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-.5px)}
+#crossPos{position:absolute;pointer-events:none;font-family:var(--mono);font-size:9px;color:var(--azul2);letter-spacing:.08em;opacity:0;z-index:2}
+@media (hover:none){#heroBox{cursor:default}#cross,#crossPos{display:none}}
+
+/* ============ SEÇÕES ============ */
+.sec{padding:110px 0 90px}
+.sec-head{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:54px}
+.sec-head .row{display:flex;align-items:baseline;gap:20px;border-top:1px solid var(--line);padding-top:22px}
+.sec-num{font-family:var(--mono);font-size:13px;color:var(--azul);letter-spacing:.2em}
+.sec-title{font-family:var(--serif);font-weight:400;font-size:clamp(32px,4vw,52px);line-height:1.1;letter-spacing:-.01em}
+.sec-title em{font-style:italic;color:var(--azul2)}
+.sec-lead{color:var(--mut);max-width:64ch;font-size:17px}
+.sec-lead strong{color:var(--ink);font-weight:500}
+
+/* ledger */
+.ledger{border-top:1px solid var(--line)}
+.lrow{display:grid;grid-template-columns:70px 250px 1fr;gap:24px;padding:26px 0;border-bottom:1px solid var(--line);align-items:baseline;transition:background .3s}
+.lrow:hover{background:var(--line2)}
+.lrow .idx{font-family:var(--mono);font-size:12px;color:var(--azul)}
+.lrow h3{font-family:var(--serif);font-size:22px;font-weight:450}
+.lrow h3 .tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--coral);border:1px solid rgba(255,90,78,.4);padding:2px 7px;margin-left:10px;vertical-align:2px;text-transform:uppercase}
+.lrow p{color:var(--mut);font-size:15px}
+.lrow p strong{color:var(--ink);font-weight:500}
+
+/* mecanismo */
+.mech{display:grid;grid-template-columns:7fr 5fr;gap:56px;align-items:start;margin-bottom:70px}
+.gan-box{border:1px solid var(--line);background:var(--panel);padding:26px 22px}
+.gan-box svg{width:100%;height:auto}
+.flowline{stroke:var(--azul);stroke-width:1.4;stroke-dasharray:5 6;animation:dash 1.1s linear infinite}
+.flowline.rev{stroke:var(--coral);animation-direction:reverse}
+@keyframes dash{to{stroke-dashoffset:-22}}
+.gan-stats{display:flex;justify-content:space-between;margin-top:14px;font-family:var(--mono);font-size:10.5px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase}
+.gan-stats b{color:var(--azul2);font-weight:500}
+.bars{display:flex;gap:14px;margin-top:10px}
+.bar-l{flex:1}
+.bar-l .lbl{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.12em;margin-bottom:5px;text-transform:uppercase}
+.bar-l .trk{height:4px;background:var(--line2)}
+.bar-l .fl{height:100%;background:var(--azul);transform-origin:left;transition:transform .25s}
+.bar-l:last-child .fl{background:var(--coral)}
+
+/* counters */
+.counters{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-left:none}
+.cnt{border-left:1px solid var(--line);padding:30px 26px}
+.cnt .val{font-family:var(--serif);font-size:clamp(36px,3.4vw,50px);font-weight:400;color:var(--ink);line-height:1}
+.cnt .val b{color:var(--azul);font-weight:400}
+.cnt .cap{font-size:12.5px;color:var(--mut);margin-top:12px;line-height:1.5}
+.cnt .src{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.08em;margin-top:10px;text-transform:uppercase}
+
+/* anatomia */
+.anat{position:relative;margin:80px 0 0;padding-left:0}
+#atkTrack{position:absolute;left:33px;top:8px;bottom:8px;width:1px;background:var(--line)}
+#atkFill{position:absolute;left:0;top:0;width:1px;height:0;background:var(--azul)}
+.atk-item{position:relative;display:grid;grid-template-columns:66px 1fr;gap:30px;padding:24px 0;border-bottom:1px solid var(--line2)}
+.atk-item .n{font-family:var(--mono);font-size:13px;color:var(--dim);background:var(--bg);width:40px;height:40px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative;z-index:1;transition:.4s}
+.atk-item.on .n{border-color:var(--azul);color:var(--azul2)}
+.atk-item h4{font-family:var(--serif);font-size:21px;font-weight:450;color:var(--dim);transition:color .4s}
+.atk-item.on h4{color:var(--ink)}
+.atk-item p{color:var(--mut);font-size:14.5px;max-width:66ch;margin-top:6px}
+
+/* quote */
+.bigquote{margin:90px auto 0;max-width:880px;text-align:center;padding:0 20px}
+.bigquote p{font-family:var(--serif);font-style:italic;font-weight:340;font-size:clamp(26px,3.4vw,42px);line-height:1.3}
+.bigquote p b{color:var(--coral);font-weight:400;font-style:normal}
+.bigquote .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--dim);margin-top:22px;text-transform:uppercase}
+
+/* timeline */
+.tl{margin-top:80px;border-top:1px solid var(--line)}
+.tl-row{display:grid;grid-template-columns:130px 260px 1fr;gap:26px;padding:28px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.tl-row .yr{font-family:var(--mono);font-size:15px;color:var(--coral);letter-spacing:.1em}
+.tl-row h4{font-family:var(--serif);font-size:21px;font-weight:450}
+.tl-row p{color:var(--mut);font-size:14.5px}
+
+/* ============ ABAS DEFESA ============ */
+.dtabs{display:flex;gap:0;border:1px solid var(--line);border-bottom:none;flex-wrap:wrap}
+.dtab{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);padding:15px 24px;border-right:1px solid var(--line);transition:.25s;display:flex;gap:9px;align-items:center}
+.dtab svg{width:14px;height:14px}
+.dtab:hover{color:var(--ink)}
+.dtab.on{background:var(--azul);color:#05070C}
+.dpanel{display:none;border:1px solid var(--line);padding:44px;background:var(--panel)}
+.dpanel.on{display:block;animation:fadeup .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.dpanel h3{font-family:var(--serif);font-size:26px;font-weight:450;margin-bottom:14px}
+.dpanel>p{color:var(--mut);max-width:70ch;margin-bottom:26px;font-size:15.5px}
+.dpanel>p strong{color:var(--ink);font-weight:500}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;border-top:1px solid var(--line)}
+.sig{display:grid;grid-template-columns:34px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line2)}
+.sig .si{font-family:var(--mono);font-size:11px;color:var(--azul)}
+.sig b{display:block;font-weight:500;font-size:15px}
+.sig span{color:var(--mut);font-size:13.5px}
+.step{display:grid;grid-template-columns:44px 1fr;gap:18px;padding:18px 0;border-bottom:1px solid var(--line2)}
+.step .sn{font-family:var(--mono);font-size:12px;color:var(--coral);padding-top:3px}
+.step b{font-weight:500;font-size:15.5px}
+.step p{color:var(--mut);font-size:14px;margin-top:4px}
+.help-box{margin-top:28px;border:1px solid rgba(78,124,255,.4);padding:22px 24px;background:var(--azul-d)}
+.help-box .mlabel{color:var(--azul2)}
+.help-box ul{list-style:none;margin-top:12px}
+.help-box li{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:7px 0;font-size:14px;color:var(--ink)}
+.help-box li .mono{color:var(--azul2);font-size:12px}
+.help-box li span:last-child{color:var(--mut)}
+.law li{list-style:none;padding:12px 0;border-bottom:1px solid var(--line2);display:grid;grid-template-columns:210px 1fr;gap:14px;font-size:14.5px}
+.law li .mono{color:var(--azul2);font-size:12px;padding-top:2px}
+.law li span{color:var(--mut)}
+.law li b{color:var(--ink);font-weight:500}
+
+/* ============ QUIZ ============ */
+.quiz{max-width:760px;margin:0 auto;border:1px solid var(--line);background:var(--panel)}
+.qbar{height:2px;background:var(--line2)}
+.qbar i{display:block;height:100%;width:0;background:var(--azul);transition:width .5s}
+.qbody{padding:40px}
+#qNum{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--azul);text-transform:uppercase}
+#qText{font-family:var(--serif);font-size:clamp(20px,2.3vw,26px);font-weight:400;line-height:1.4;margin:18px 0 30px;min-height:112px}
+.qbtns{display:flex;gap:14px}
+.qbtn{flex:1;font-family:var(--mono);font-size:13px;letter-spacing:.16em;padding:18px;border:1px solid var(--line);text-transform:uppercase;transition:.25s}
+#btnReal{color:var(--azul2);border-color:rgba(78,124,255,.5)}
+#btnFake{color:var(--coral);border-color:rgba(255,90,78,.45)}
+.qbtn:hover{background:var(--panel2)}
+#btnReal:hover{background:var(--azul-d)}
+#btnFake:hover{background:var(--coral-d)}
+.qbtn[disabled]{opacity:.4;pointer-events:none}
+#qFeedback{display:none;margin-top:26px;padding:18px 20px;border-left:2px solid var(--azul);font-size:14.5px;color:var(--mut)}
+#qFeedback.ok{border-color:var(--azul)}#qFeedback.bad{border-color:var(--coral)}
+#qFeedback b{display:block;color:var(--ink);margin-bottom:6px;font-weight:500}
+#qNext{display:none;margin-top:22px}
+.qres{text-align:center;padding:16px 0 4px}
+.qres .big{font-family:var(--serif);font-size:56px;font-weight:340}
+.qres .big b{color:var(--azul);font-weight:400}
+.qres p{color:var(--mut);margin:10px 0 26px}
+
+/* ============ LABORATÓRIO ============ */
+.lab-warn{display:flex;gap:16px;align-items:flex-start;border:1px solid rgba(255,90,78,.45);background:var(--coral-d);padding:20px 24px;margin-bottom:46px}
+.lab-warn svg{width:20px;height:20px;color:var(--coral);flex-shrink:0;margin-top:2px}
+.lab-warn p{font-size:14px;color:var(--ink)}
+.lab-warn p b{color:var(--coral);font-weight:500}
+.ltabs{display:flex;gap:0;border:1px solid var(--line);border-bottom:none;flex-wrap:wrap}
+.ltab{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);padding:15px 26px;border-right:1px solid var(--line);transition:.25s}
+.ltab:hover{color:var(--ink)}
+.ltab.on{background:var(--panel2);color:var(--azul2);box-shadow:inset 0 -2px 0 var(--azul)}
+.lpanel{display:none;border:1px solid var(--line);padding:44px;background:var(--bg2)}
+.lpanel.on{display:block;animation:fadeup .5s cubic-bezier(.2,.7,.2,1)}
+.dz{border:1px dashed var(--line);padding:44px 24px;text-align:center;cursor:pointer;transition:.25s;color:var(--mut)}
+.dz:hover,.dz.drag{border-color:var(--azul);color:var(--ink);background:var(--line2)}
+.dz svg{display:block;width:26px;height:26px;color:var(--azul);margin:0 auto 12px}
+.dz .t1{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink);text-transform:uppercase}
+.dz .t2{font-size:12.5px;margin-top:6px}
+.f-actions{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+#fStage{display:none;margin-top:40px}
+.f-top{display:grid;grid-template-columns:200px 1fr;gap:30px;align-items:start;margin-bottom:34px}
+.f-top .orig{border:1px solid var(--line);width:100%}
+.f-meta{font-family:var(--mono);font-size:11.5px;color:var(--mut);line-height:2}
+.f-meta b{color:var(--ink);font-weight:500}
+.f-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:36px}
+.f-vis{border:1px solid var(--line)}
+.f-vis canvas{width:100%;background:#000}
+.f-vis .cap{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);padding:10px 12px;border-top:1px solid var(--line2);display:flex;justify-content:space-between;gap:8px}
+.verd-lo{color:var(--azul2)}.verd-md{color:var(--ink)}.verd-hi{color:var(--coral)}
+.f-lower{display:grid;grid-template-columns:1fr 260px;gap:40px;align-items:start}
+.mrow{display:grid;grid-template-columns:1.2fr 1fr 130px 110px;gap:14px;padding:13px 0;border-bottom:1px solid var(--line2);font-size:13.5px;align-items:center}
+.mrow.head{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+.mrow .mv{font-family:var(--mono);font-size:12px;color:var(--mut)}
+.mrow b{font-weight:500}
+.mtrack{height:3px;background:var(--line2)}
+.mtrack i{display:block;height:100%;width:0;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+#fConc{margin-top:20px;font-size:14.5px;color:var(--mut)}
+#fConc b{color:var(--ink)}
+.disclaimer{margin-top:22px;font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.05em;line-height:1.7;border-top:1px solid var(--line2);padding-top:16px}
+.gauge{text-align:center;border:1px solid var(--line);padding:26px 18px}
+.gauge svg{width:100%;max-width:190px}
+.gauge .gv{font-family:var(--serif);font-size:44px;font-weight:340;margin-top:-58px}
+.gauge .gv small{font-size:20px;color:var(--dim)}
+.gauge .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:10px}
+.thumbs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.thumbs canvas{width:120px;border:1px solid var(--line)}
+.trow{display:grid;grid-template-columns:230px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line2);font-size:13.5px;align-items:center}
+.trow .mono{font-size:11.5px;color:var(--mut)}
+
+/* retrato */
+.port-grid{display:grid;grid-template-columns:5fr 7fr;gap:40px;align-items:start}
+.pstyle{display:block;cursor:pointer;border:1px solid var(--line);padding:18px 20px;margin-bottom:12px;transition:.25s;position:relative}
+.pstyle:hover{border-color:var(--azul)}
+.pstyle input{position:absolute;opacity:0}
+.pstyle .pn{display:flex;justify-content:space-between;align-items:baseline}
+.pstyle .pn b{font-family:var(--serif);font-size:19px;font-weight:450}
+.pstyle .pn span{font-family:var(--mono);font-size:10px;color:var(--azul2);letter-spacing:.1em}
+.pstyle .pd{font-size:13px;color:var(--mut);margin-top:5px}
+.pstyle.sel{border-color:var(--azul);background:var(--panel);box-shadow:inset 3px 0 0 var(--azul)}
+.pfield{margin:22px 0}
+.pfield label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.pfield input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:12px 14px;font-family:var(--serif);font-style:italic;font-size:17px}
+.pfield input:focus{outline:none;border-color:var(--azul)}
+#pOut{display:none;margin-top:8px}
+#pCanvas{width:100%;border:1px solid var(--line)}
+#pEmpty{border:1px dashed var(--line);aspect-ratio:4/5;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--dim);gap:12px;text-align:center;padding:20px}
+#pEmpty svg{width:28px;height:28px;color:var(--azul)}
+#pEmpty .mono{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+.plate{margin:22px auto 0;max-width:420px;text-align:center;border:1px solid var(--line);outline:1px solid var(--line);outline-offset:4px;padding:18px 22px;background:var(--panel)}
+.plate .pt{font-family:var(--serif);font-style:italic;font-size:20px;font-weight:400}
+.plate .pm{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--azul2);text-transform:uppercase;margin-top:8px}
+.plate .pc{font-size:12px;color:var(--dim);margin-top:10px;font-style:italic}
+#camBox{display:none;margin-top:16px}
+#camVideo{width:100%;border:1px solid var(--azul)}
+#pBusy{display:none;font-family:var(--mono);font-size:11px;color:var(--azul2);letter-spacing:.12em;margin-top:14px;text-transform:uppercase}
+#pBusy i{display:inline-block;width:60px;height:2px;background:var(--line2);vertical-align:middle;margin-left:10px;position:relative;overflow:hidden}
+#pBusy i::after{content:"";position:absolute;left:-40%;width:40%;height:100%;background:var(--azul);animation:load 1s linear infinite}
+@keyframes load{to{left:100%}}
+
+/* ============ FOOTER / TOAST / REVEAL ============ */
+footer{border-top:1px solid var(--line);padding:70px 0 40px;background:var(--bg2)}
+.foot-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:50px;margin-bottom:50px}
+footer h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--azul2);margin-bottom:18px}
+footer p,footer li{font-size:13.5px;color:var(--mut);line-height:1.8}
+footer ul{list-style:none}
+footer li a{border-bottom:1px solid transparent;transition:.2s}
+footer li a:hover{color:var(--ink);border-color:var(--azul)}
+.foot-base{border-top:1px solid var(--line2);padding-top:22px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+#toasts{position:fixed;bottom:24px;right:24px;z-index:100;display:flex;flex-direction:column;gap:10px}
+.toast{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-left:2px solid var(--azul);padding:14px 18px;max-width:340px;font-size:13.5px;color:var(--ink);animation:tin .4s cubic-bezier(.2,.7,.2,1)}
+.toast.err{border-left-color:var(--coral)}
+.toast svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:var(--azul)}
+.toast.err svg{color:var(--coral)}
+@keyframes tin{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.rv.on{opacity:1;transform:none}
+
+/* ============ RESPONSIVO ============ */
+@media(max-width:980px){
+  .hero-grid,.mech,.f-lower,.port-grid{grid-template-columns:1fr}
+  #heroBox{max-height:520px}
+  .counters{grid-template-columns:1fr 1fr;border-left:1px solid var(--line);border-top:none}
+  .cnt{border-top:1px solid var(--line)}
+  .f-grid{grid-template-columns:1fr}
+  .f-top{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .lrow{grid-template-columns:44px 1fr}
+  .lrow p{grid-column:2}
+  .tl-row{grid-template-columns:80px 1fr}
+  .tl-row p{grid-column:2}
+  .mrow{grid-template-columns:1fr 1fr}
+  .sig-grid{grid-template-columns:1fr}
+  nav.desk{display:none}
+  #menuBtn{display:block}
+}
+@media(max-width:620px){
+  .sec{padding:80px 0 60px}
+  .dpanel,.lpanel{padding:26px 20px}
+  .law li,.help-box li{grid-template-columns:1fr}
+  .qbody{padding:26px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  .flowline{animation:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="readbar"></div>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="#hero">Simulacro<sup>DOSSIÊ</sup></a>
+    <nav class="desk" id="deskNav">
+      <a href="#mecanismo">01 · Mecanismo</a>
+      <a href="#arma">02 · Quando vira arma</a>
+      <a href="#defesa">03 · Linha de defesa</a>
+      <a href="#quiz">04 · Teste-se</a>
+      <a href="#lab">05 · Laboratório</a>
+    </nav>
+    <button id="menuBtn" aria-label="Abrir menu">MENU</button>
+  </div>
+</header>
+<div id="mobileNav">
+  <a href="#mecanismo"><span>01</span>O mecanismo</a>
+  <a href="#arma"><span>02</span>Quando vira arma</a>
+  <a href="#defesa"><span>03</span>Linha de defesa</a>
+  <a href="#quiz"><span>04</span>Teste-se</a>
+  <a href="#lab"><span>05</span>Laboratório</a>
+</div>
+
+<!-- ================= HERO ================= -->
+<section id="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="mlabel rv">Dossiê interativo · mídia sintética · 2025</p>
+      <h1 class="rv" style="transition-delay:.1s">Nem tudo o que você <em>vê</em> <span class="strike">realmente aconteceu</span>.</h1>
+      <p class="hero-sub rv" style="transition-delay:.2s">Deepfakes são vídeos, imagens e vozes forjadas por inteligência artificial. Nas mãos certas, entretenimento. Nas erradas, <strong>uma arma de cyberbullying com o rosto de alguém que você conhece</strong>. Este dossiê explica o mecanismo, denuncia o abuso e treina sua defesa.</p>
+      <div class="hero-cta rv" style="transition-delay:.3s">
+        <a class="btn btn-solid" href="#mecanismo"><i data-lucide="scan-face"></i>Entender o mecanismo</a>
+        <a class="btn" href="#lab"><i data-lucide="flask-conical"></i>Ir ao laboratório</a>
+      </div>
+      <p class="hero-note rv" style="transition-delay:.4s">TIP: o retrato à direita alterna entre original e sintético. Clique nele.</p>
+    </div>
+    <div id="heroBox" class="rv" style="transition-delay:.25s" title="Clique para alternar original / sintético">
+      <canvas id="heroCanvas"></canvas>
+      <button id="glitchBtn">forçar glitch</button>
+      <div class="hud hud-tl">SIMULACRO // FLUXO 01 — sujeito_a</div>
+      <div class="hud hud-bl"><span class="dot" id="hudDot"></span><span id="hudState">ESTADO: CAPTURA ORIGINAL</span></div>
+      <div class="hud hud-br"><span id="hudConf">sem sinais de síntese</span><div id="confWrap"><div id="confFill"></div></div></div>
+      <div id="cross"></div><span id="crossPos"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 01 MECANISMO ================= -->
+<section id="mecanismo" class="sec">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="row"><span class="sec-num">01</span><h2 class="sec-title">O mecanismo da <em>ilusão</em></h2></div>
+      <p class="sec-lead">Um deepfake é fabricado por duas redes neurais em disputa: <strong>uma forja a falsificação, a outra tenta denunciá-la</strong>. Milhões de rodadas depois, o falsificador vence o revisor — e o resultado engana olhos e algoritmos.</p>
+    </div>
+
+    <div class="mech">
+      <div class="rv">
+        <p class="sec-lead" style="margin-bottom:26px">No treino, o <strong>gerador</strong> produz rostos e vozes cada vez mais convincentes; o <strong>discriminador</strong> aprende a apontar o que é falso. A cada rodada, os dois melhoram — até que a diferença entre o real e o sintético fique menor do que qualquer olho humano consegue perceber. É a mesma lógica de um falsificador de quadros aperfeiçoando a técnica contra um perito implacável.</p>
+        <div class="ledger">
+          <div class="lrow"><span class="idx">A.</span><h3>Uma selfie basta</h3><p>Fotos públicas de perfis sociais servem de base. <strong>Quanto mais imagens, mais fiel a imitação</strong> — mas uma única foto já alimenta as ferramentas mais novas.</p></div>
+          <div class="lrow"><span class="idx">B.</span><h3>15 segundos de voz</h3><p>Esse é o tempo mínimo que as ferramentas atuais pedem para <strong>clonar timbre, entonação e pausas</strong> de qualquer pessoa que já gravou um áudio de WhatsApp.</p></div>
+          <div class="lrow"><span class="idx">C.</span><h3>Ferramentas gratuitas</h3><p>Não é preciso saber programar: <strong>apps e sites de um toque</strong> fazem troca de rosto, dublagem e clonagem em minutos, sem qualquer verificação de consentimento.</p></div>
+          <div class="lrow"><span class="idx">D.</span><h3>Distribuição instantânea</h3><p>Grupos de mensagem e redes amplificam o material <strong>antes de qualquer checagem</strong> — e a velocidade do compartilhamento supera a da desmentida.</p></div>
+        </div>
+      </div>
+      <div class="gan-box rv" style="transition-delay:.15s">
+        <p class="mlabel" style="margin-bottom:16px">Treino adversário — ao vivo</p>
+        <svg viewBox="0 0 320 200" aria-label="Diagrama de rede adversária">
+          <rect x="14" y="76" width="96" height="46" fill="none" stroke="#4E7CFF" stroke-width="1.2"/>
+          <text x="62" y="103" text-anchor="middle" fill="#E9ECF4" font-family="JetBrains Mono" font-size="10" letter-spacing="2">GERADOR</text>
+          <rect x="210" y="76" width="96" height="46" fill="none" stroke="#FF5A4E" stroke-width="1.2"/>
+          <text x="258" y="103" text-anchor="middle" fill="#E9ECF4" font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">DISCRIMINADOR</text>
+          <path class="flowline" d="M110 84 H 210"/>
+          <text x="160" y="76" text-anchor="middle" fill="#98A1B3" font-family="JetBrains Mono" font-size="8.5" letter-spacing="1">FORJA →</text>
+          <path class="flowline rev" d="M210 116 H 110"/>
+          <text x="160" y="132" text-anchor="middle" fill="#98A1B3" font-family="JetBrains Mono" font-size="8.5" letter-spacing="1">← DENUNCIA</text>
+          <circle cx="62" cy="34" r="13" fill="none" stroke="#98A1B3" stroke-width="1"/>
+          <circle cx="46" cy="34" r="13" fill="none" stroke="#6B7488" stroke-width="1"/>
+          <circle cx="30" cy="34" r="13" fill="none" stroke="#3d4452" stroke-width="1"/>
+          <text x="62" y="66" text-anchor="middle" fill="#6B7488" font-family="JetBrains Mono" font-size="8" letter-spacing="1">ROSTOS REAIS</text>
+          <text x="258" y="150" text-anchor="middle" fill="#6B7488" font-family="JetBrains Mono" font-size="8" letter-spacing="1">VEREDITO: REAL / FALSO</text>
+          <rect x="14" y="176" width="292" height="1" fill="#232833"/>
+          <text x="14" y="196" fill="#98A1B3" font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">RODADA Nº <tspan id="ganRound" fill="#9DB9FF">000000</tspan></text>
+          <text x="306" y="196" text-anchor="end" fill="#6B7488" font-family="JetBrains Mono" font-size="9" letter-spacing="1">TREINO CONTÍNUO</text>
+        </svg>
+        <div class="bars">
+          <div class="bar-l"><div class="lbl">perda do gerador</div><div class="trk"><div class="fl" id="lossG"></div></div></div>
+          <div class="bar-l"><div class="lbl">perda do discriminador</div><div class="trk"><div class="fl" id="lossD"></div></div></div>
+        </div>
+        <div class="gan-stats"><span>estado: <b>convergindo</b></span><span>detecção humana: <b>&lt; 50%</b></span></div>
+      </div>
+    </div>
+
+    <div class="counters rv">
+      <div class="cnt"><div class="val"><b class="count" data-val="96">0</b><span>%</span></div><p class="cap">dos vídeos deepfake então online eram imagens íntimas <strong>não consensuais</strong></p><p class="src">Sensity / Deeptrace, 2019</p></div>
+      <div class="cnt"><div class="val"><span>×</span><b class="count" data-val="10">0</b></div><p class="cap">crescimento do volume de deepfakes em apenas <strong>seis meses</strong> no fim de 2019</p><p class="src">Deeptrace Labs</p></div>
+      <div class="cnt"><div class="val"><b class="count" data-val="15">0</b><span>s</span></div><p class="cap">de áudio bastam para <strong>clonar uma voz</strong> com ferramentas de acesso livre</p><p class="src">testes do setor, 2023</p></div>
+      <div class="cnt"><div class="val"><span>US$ </span><b class="count" data-val="25">0</b><span>M</span></div><p class="cap">desviados em Hong Kong (2024) numa única videochamada com <strong>rostos sintéticos</strong></p><p class="src">registro público do caso</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 QUANDO VIRA ARMA ================= -->
+<section id="arma" class="sec" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="row"><span class="sec-num" style="color:var(--coral)">02</span><h2 class="sec-title">Quando a piada vira <em>arma</em></h2></div>
+      <p class="sec-lead">Entre colegas de escola ou trabalho, o deepfake raramente é política ou finanças: ele ataca <strong>a reputação, o corpo e a intimidade</strong>. A vítima precisa provar que algo falso é falso — enquanto todos ao redor já viram.</p>
+    </div>
+
+    <div class="ledger rv">
+      <div class="lrow"><span class="idx">I.</span><h3>Imagens íntimas falsas <span class="tag">mais comum</span></h3><p>Uma foto comum do perfil é "despida" por IA. É a forma dominante de deepfake no mundo — e <strong>adolescentes são alvos frequentes</strong>, fabricados por outros adolescentes.</p></div>
+      <div class="lrow"><span class="idx">II.</span><h3>Impersonação</h3><p>Vídeos e áudios em que a vítima <strong>parece insultar colegas, professores ou a própria família</strong>. O grupo se volta contra ela, amizades se rompem — e o vídeo falso vira prova social da mentira.</p></div>
+      <div class="lrow"><span class="idx">III.</span><h3>Chantagem (sextorsão)</h3><p>"Se você não fizer o que eu quero, eu espalho o vídeo." O vídeo <strong>não existe — mas a vítima não tem como garantir isso</strong>. O medo faz o resto.</p></div>
+      <div class="lrow"><span class="idx">IV.</span><h3>Descredibilização</h3><p>Montagens de falas e expressões para <strong>excluir, ridicularizar ou "confirmar" boatos</strong> sobre alguém. A piada interna de um grupo pode destruir anos de reputação.</p></div>
+    </div>
+
+    <h3 class="rv" style="font-family:var(--serif);font-size:28px;font-weight:450;margin:90px 0 8px">Anatomia de um ataque</h3>
+    <p class="sec-lead rv" style="margin-bottom:34px">O roteiro se repete em quase todos os casos que chegam aos canais de ajuda. Reconhecer as etapas é o primeiro passo para interromper o ciclo — <strong>no passo 2 ainda dá para evitar quase todo o dano</strong>.</p>
+
+    <div class="anat" id="anatomia">
+      <div id="atkTrack"><div id="atkFill"></div></div>
+      <div class="atk-item"><span class="n">1</span><div><h4>Coleta</h4><p>Dezenas de fotos públicas do perfil da vítima — festas, stories, foto de capa — são reunidas em minutos. Quanto mais aberto o perfil, mais realista a imitação.</p></div></div>
+      <div class="atk-item"><span class="n">2</span><div><h4>Fabricação</h4><p>Uma ferramenta gratuita treina a substituição. O que custava semanas de computação em 2017 hoje roda <strong>num celular, em menos de uma hora</strong>.</p></div></div>
+      <div class="atk-item"><span class="n">3</span><div><h4>Distribuição</h4><p>O material circula primeiro em grupos pequenos e fechados — exatamente onde a vítima tem menos visibilidade e mais vergonha de reagir.</p></div></div>
+      <div class="atk-item"><span class="n">4</span><div><h4>Humilhação e chantagem</h4><p>Comentários, prints, ameaças de amplificar. A vítima relata ansiedade, isolamento, queda na escola; em casos graves, ideação suicida.</p></div></div>
+      <div class="atk-item"><span class="n">5</span><div><h4>Rastro permanente</h4><p>Mesmo removido, o conteúdo foi baixado e reenviado. Por isso <strong>documentar e denunciar cedo vale mais do que apagar depois</strong>.</p></div></div>
+    </div>
+
+    <div class="bigquote rv">
+      <p>"O vídeo é falso. <b>O dano, a vergonha e o medo são reais</b> — e a internet raramente esquece."</p>
+      <p class="who">Princípio central deste dossiê</p>
+    </div>
+
+    <h3 class="rv" style="font-family:var(--serif);font-size:28px;font-weight:450;margin:100px 0 8px">Como chegamos aqui</h3>
+    <p class="sec-lead rv" style="margin-bottom:34px">Cinco marcos que transformaram uma curiosidade de fórum em um problema de saúde pública digital.</p>
+    <div class="tl">
+      <div class="tl-row rv"><span class="yr">2017</span><h4>A palavra ganha rosto</h4><p>O termo "deepfake" nasce em fóruns quando usuários começam a trocar rostos em vídeos com redes neurais. A técnica era lenta — e já suficiente para enganar.</p></div>
+      <div class="tl-row rv"><span class="yr">2019</span><h4>A escala do abuso</h4><p>Levantamentos do setor revelam que ~96% dos deepfakes então online eram imagens íntimas não consensuais, quase todos contra mulheres. O bullying já era o uso principal.</p></div>
+      <div class="tl-row rv"><span class="yr">2023</span><h4>Até o Papa</h4><p>Uma imagem gerada por IA do papa vestindo um casaco branco volumoso engana milhões e torna o risco visível para o grande público: ninguém está imune.</p></div>
+      <div class="tl-row rv"><span class="yr">2024</span><h4>A fraude da videochamada</h4><p>Um funcionário em Hong Kong transfere o equivalente a US$ 25 milhões após uma reunião remota em que todos os "colegas" eram rostos sintéticos.</p></div>
+      <div class="tl-row rv"><span class="yr">2024</span><h4>Alunos contra alunos</h4><p>Ondas de deepfakes íntimos fabricados por estudantes contra colegas e professoras em escolas de vários países colocam o tema no centro do debate sobre cyberbullying.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 LINHA DE DEFESA ================= -->
+<section id="defesa" class="sec">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="row"><span class="sec-num">03</span><h2 class="sec-title">A linha de <em>defesa</em></h2></div>
+      <p class="sec-lead">Nenhuma barreira funciona sozinha. A proteção real combina <strong>tecnologia de detecção, legislação e resposta rápida</strong> — e a última delas depende de você saber o que fazer nos primeiros 30 minutos.</p>
+    </div>
+
+    <div class="rv">
+      <div class="dtabs" role="tablist">
+        <button class="dtab on" data-tab="t-detect" role="tab"><i data-lucide="fingerprint"></i>Detectar</button>
+        <button class="dtab" data-tab="t-law" role="tab"><i data-lucide="scale"></i>Legislação</button>
+        <button class="dtab" data-tab="t-act" role="tab"><i data-lucide="life-buoy"></i>O que fazer</button>
+      </div>
+
+      <div class="dpanel on" id="t-detect" role="tabpanel">
+        <h3>Sinais manuais &amp; prova de origem</h3>
+        <p>Detetores automáticos perdem a corrida contra geradores cada vez melhores. Por isso a primeira defesa é <strong>atenção às falhas físicas</strong> que a IA ainda comete — e a segunda é exigir <strong>prova de origem</strong>: padrões como o C2PA ("Content Credentials") e marcas d'água como o SynthID anexam ao arquivo um registro criptográfico de como ele foi criado. Plataformas já começam a exibir esse selo; a sua tarefa é aprender a procurá-lo.</p>
+        <div class="sig-grid">
+          <div class="sig"><span class="si">S1</span><div><b>Piscadas e olhar</b><span>Rostos sintéticos piscam menos, de forma irregular, ou ficam longos períodos sem piscar.</span></div></div>
+          <div class="sig"><span class="si">S2</span><div><b>Mãos e dedos</b><span>Conte os dedos. Mãos com seis dedos, unhas fundidas ou articulações impossíveis são a assinatura clássica.</span></div></div>
+          <div class="sig"><span class="si">S3</span><div><b>Sincronia labial</b><span>Em vídeos dublados, boca e áudio desafinam por frações de segundo — especialmente em sílabas com P, B e M.</span></div></div>
+          <div class="sig"><span class="si">S4</span><div><b>Reflexos e óculos</b><span>O reflexo nas lentes precisa bater com a cena. Reflexos genéricos ou duplicados delatam a montagem.</span></div></div>
+          <div class="sig"><span class="si">S5</span><div><b>Bordas do cabelo e orelhas</b><span>Fios que "derretem" no fundo, brincos fundidos na mandíbula, pele de cera sem poros nem textura.</span></div></div>
+          <div class="sig"><span class="si">S6</span><div><b>Fundo inconsistente</b><span>Padrões que mudam de direção, textos ilegíveis, geometria derretida atrás do sujeito.</span></div></div>
+          <div class="sig"><span class="si">S7</span><div><b>Luz contraditória</b><span>Sombras do rosto apontando para um lado, sombras do fundo para outro.</span></div></div>
+          <div class="sig"><span class="si">S8</span><div><b>Pressa e emoção</b><span>Conteúdo que exige compartilhamento urgente ou raiva imediata é projetado para desligar seu ceticismo. Respire antes de repassar.</span></div></div>
+        </div>
+      </div>
+
+      <div class="dpanel" id="t-law" role="tabpanel">
+        <h3>O que a lei já diz (e o que ainda está em votação)</h3>
+        <p>No Brasil, o deepfake malicioso já é punível por camadas do ordenamento jurídico — e um marco específico de inteligência artificial avança no Congresso. Internamente, combine com os códigos de conduta das plataformas: <strong>denunciar cedo ativa remoção muito antes de qualquer processo</strong>.</p>
+        <ul class="law">
+          <li><span class="mono">Lei 13.718/2018</span><span><b>Divulgação de cena íntima falsa ou real sem consentimento é crime</b> — vale inclusive quando a cena foi fabricada por IA, com pena agravada.</span></li>
+          <li><span class="mono">Código Penal</span><span>Calúnia, difamação, injúria e <b>constrangimento ilegal</b> cobrem impersonação, chantagem e humilhação por deepfake.</span></li>
+          <li><span class="mono">ECA · Lei 8.069/90</span><span>Proteção reforçada quando a vítima é <b>criança ou adolescente</b> — com dever de guarda e comunicação obrigatória pela escola.</span></li>
+          <li><span class="mono">Marco Civil + LGPD</span><span>Direito à remoção de conteúdo abusivo e ao controle sobre <b>dados pessoais usados para treinar modelos</b>.</span></li>
+          <li><span class="mono">PLs de IA (em trâmite)</span><span>Propostas exigem <b>rotulagem obrigatória de conteúdo sintético</b> e responsabilizam quem distribuir deepfake lesivo.</span></li>
+          <li><span class="mono">EU AI Act · 2024</span><span>Referência internacional: obriga <b>marcação visível de mídia sintética</b> e proíbe IA para descreditar pessoas sem base.</span></li>
+        </ul>
+      </div>
+
+      <div class="dpanel" id="t-act" role="tabpanel">
+        <h3>Se aconteceu com você (ou com alguém que você conhece)</h3>
+        <p>Respire. Você não fez nada de errado — <strong>quem cometeu o crime é quem fabricou</strong>. Os primeiros passos importam mais do que qualquer outra coisa:</p>
+        <div class="step"><span class="sn">01</span><div><b>Não apague nada</b><p>Prints com URL, data e hora visíveis são a prova. Salve o material em pasta separada antes de qualquer bloqueio.</p></div></div>
+        <div class="step"><span class="sn">02</span><div><b>Denuncie na plataforma</b><p>Todas as grandes redes têm canal específico para conteúdo íntimo não consensual e identidade falsa — prioridade máxima de remoção.</p></div></div>
+        <div class="step"><span class="sn">03</span><div><b>Registre boletim de ocorrência</b><p>Pode ser feito na delegacia eletrônica do seu estado. Anexe os prints. Menores de 18 anos devem ter apoio de um responsável.</p></div></div>
+        <div class="step"><span class="sn">04</span><div><b>Bloqueie a propagação</b><p>Adultos: StopNCII.org cria uma "impressão digital" do conteúdo que impede o repost em parceiras. Menores: Take It Down (NCMEC) faz o mesmo.</p></div></div>
+        <div class="step"><span class="sn">05</span><div><b>Procure apoio humano</b><p>Conte para alguém de confiança antes de enfrentar sozinho. Escola, família e apoio psicológico fazem parte da resposta — não são luxo.</p></div></div>
+        <div class="step"><span class="sn">06</span><div><b>Não pague, não negocie</b><p>Atender à chantagem financia o ciclo e não garante o fim da ameaça. Denunciar interrompe; pagar alimenta.</p></div></div>
+        <div class="help-box">
+          <p class="mlabel">Canais de ajuda — Brasil</p>
+          <ul>
+            <li><span class="mono">SaferNet</span><span>safernet.org.br — canal nacional de denúncia de crimes digitais, gratuito e confidencial</span></li>
+            <li><span class="mono">Disque 100</span><span>violência contra crianças e adolescentes, com encaminhamento imediato</span></li>
+            <li><span class="mono">StopNCII.org</span><span>bloqueio preventivo de imagens íntimas (adultos), sem enviar a imagem original</span></li>
+            <li><span class="mono">Take It Down</span><span>equivalente para menores de 18 anos, operado pelo NCMEC</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 QUIZ ================= -->
+<section id="quiz" class="sec" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="row"><span class="sec-num">04</span><h2 class="sec-title">Real ou <em>sintético</em>?</h2></div>
+      <p class="sec-lead">Cinco cenários reais de circulação. Confie no seu instinto — e depois leia o sinal que entregava cada resposta. <strong>Erros aqui são gratuitos; na vida real, custam caro.</strong></p>
+    </div>
+    <div class="quiz rv">
+      <div class="qbar"><i id="qBar"></i></div>
+      <div class="qbody">
+        <div id="qMain">
+          <p id="qNum">Cenário 1 / 5</p>
+          <p id="qText"></p>
+          <div class="qbtns">
+            <button class="qbtn" id="btnReal">Real</button>
+            <button class="qbtn" id="btnFake">Sintético</button>
+          </div>
+          <div id="qFeedback"></div>
+          <button class="btn" id="qNext">Próximo cenário<i data-lucide="arrow-right"></i></button>
+        </div>
+        <div class="qres" id="qResult" style="display:none">
+          <p class="mlabel" style="margin-bottom:8px">resultado</p>
+          <p class="big"><b id="qScore">0</b>/5</p>
+          <p id="qVerdict"></p>
+          <button class="btn btn-solid" id="qRestart">Refazer o teste<i data-lucide="rotate-ccw"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 LABORATÓRIO ================= -->
+<section id="lab" class="sec">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="row"><span class="sec-num">05</span><h2 class="sec-title">Laboratório <em>SIMULACRO</em></h2></div>
+      <p class="sec-lead">Duas bancadas que rodam <strong>100% no seu navegador — nada é enviado a servidor algum</strong>: a mesa forense, que executa análises reais de imagem, e a oficina de retratos de época, que reinterpreta sua foto como pintura clássica.</p>
+    </div>
+
+    <div class="lab-warn rv">
+      <i data-lucide="alert-triangle"></i>
+      <p><b>Declaração de intenção:</b> este laboratório não troca rostos nem fabrica deepfakes — seria contradizer tudo o que este dossiê denuncia. Ele demonstra, com cálculos reais, os sinais que peritos procuram, e estiliza imagens <b>sem substituir identidades</b>. A análise é didática: indica sinais, nunca emite provas.</p>
+    </div>
+
+    <div class="rv">
+      <div class="ltabs">
+        <button class="ltab on" data-lab="forense"><i data-lucide="microscope" style="width:13px;height:13px;vertical-align:-2px;margin-right:8px"></i>Mesa forense</button>
+        <button class="ltab" data-lab="retrato"><i data-lucide="brush" style="width:13px;height:13px;vertical-align:-2px;margin-right:8px"></i>Retrato de época</button>
+      </div>
+
+      <!-- ===== MESA FORENSE ===== -->
+      <div class="lpanel on" id="lab-forense">
+        <div class="dz" id="fdz" role="button" tabindex="0" aria-label="Enviar imagem ou vídeo para análise">
+          <i data-lucide="file-search"></i>
+          <p class="t1">Arraste uma imagem ou vídeo — ou clique para escolher</p>
+          <p class="t2">JPG, PNG, WebP ou MP4 · processado localmente, nunca enviado</p>
+        </div>
+        <input type="file" id="fFile" accept="image/*,video/*" hidden>
+        <div class="f-actions">
+          <button class="btn" id="fSample"><i data-lucide="scan-face"></i>Gerar amostra sintética de teste</button>
+          <button class="btn" id="fReset" disabled><i data-lucide="eraser"></i>Limpar análise</button>
+        </div>
+
+        <div id="fStage">
+          <div class="f-top">
+            <div><canvas class="orig" id="fOrig"></canvas></div>
+            <div class="f-meta" id="fMeta"></div>
+          </div>
+          <div class="f-grid">
+            <div class="f-vis"><canvas id="cvEla"></canvas><div class="cap"><span>A · Erro de compressão (ELA)</span><span id="vEla" class="verd-lo">—</span></div></div>
+            <div class="f-vis"><canvas id="cvNoise"></canvas><div class="cap"><span>B · Textura de ruído</span><span id="vNoise" class="verd-lo">—</span></div></div>
+            <div class="f-vis"><canvas id="cvEdge"></canvas><div class="cap"><span>C · Contornos (Sobel)</span><span id="vEdge" class="verd-lo">—</span></div></div>
+          </div>
+          <div class="f-lower">
+            <div>
+              <div class="mrow head"><span>Teste</span><span>Medição</span><span>Nível de atenção</span><span>Veredito</span></div>
+              <div id="fMetrics"></div>
+              <p id="fConc"></p>
+              <div id="fTempo" style="display:none"></div>
+              <p class="disclaimer">METODOLOGIA — Testes clássicos de forense de imagens (ELA, consistência de ruído, contornos e procedência), implementados localmente em JavaScript. Detectores de produção usam redes treinadas em milhões de amostras; aqui os limiares são empíricos e o resultado serve para <b>ensinar a olhar</b>, não para julgar um arquivo.</p>
+            </div>
+            <div class="gauge">
+              <svg viewBox="0 0 200 112" aria-hidden="true">
+                <path d="M16 100 A84 84 0 0 1 184 100" fill="none" stroke="rgba(233,236,244,.12)" stroke-width="6" stroke-linecap="round"/>
+                <path id="gaugeArc" d="M16 100 A84 84 0 0 1 184 100" fill="none" stroke="#4E7CFF" stroke-width="6" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" style="transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1),stroke .5s"/>
+              </svg>
+              <div class="gv"><span id="gaugeNum">0</span><small>/100</small></div>
+              <div class="gl" id="gaugeLabel">risco de síntese estimado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RETRATO DE ÉPOCA ===== -->
+      <div class="lpanel" id="lab-retrato">
+        <div class="port-grid">
+          <div>
+            <div class="dz" id="pdz" role="button" tabindex="0" aria-label="Enviar foto para composição do retrato">
+              <i data-lucide="image-up"></i>
+              <p class="t1">Envie um retrato — ou clique para escolher</p>
+              <p class="t2">Melhor resultado: rosto centralizado, ombros visíveis</p>
+            </div>
+            <input type="file" id="pFile" accept="image/*" hidden>
+            <div class="f-actions">
+              <button class="btn" id="pCam"><i data-lucide="camera"></i>Usar a câmera</button>
+            </div>
+            <div id="camBox">
+              <video id="camVideo" autoplay playsinline muted></video>
+              <div class="f-actions">
+                <button class="btn btn-solid" id="camShot"><i data-lucide="aperture"></i>Capturar quadro</button>
+                <button class="btn" id="camClose"><i data-lucide="x"></i>Fechar câmera</button>
+              </div>
+            </div>
+            <div class="pfield">
+              <label for="pName">Nome para a placa do museu (opcional)</label>
+              <input id="pName" type="text" maxlength="34" placeholder="Anônimo Ilustre">
+            </div>
+            <p class="mlabel" style="margin-bottom:12px">Escolha o estilo de época</p>
+            <label class="pstyle sel"><input type="radio" name="pstyle" value="rena" checked><span class="pn"><b>Retrato Renascentista</b><span>c. 1490</span></span><p class="pd">Óleo sobre tela em tons de siena, vinheta quente e textura de trama.</p></label>
+            <label class="pstyle"><input type="radio" name="pstyle" value="dag"><span class="pn"><b>Daguerreótipo</b><span>c. 1845</span></span><p class="pd">Placa prateada: sépia fria, grão pesado, arranhões e rebites.</p></label>
+            <label class="pstyle"><input type="radio" name="pstyle" value="imp"><span class="pn"><b>Retrato de Corte</b><span>c. 1812</span></span><p class="pd">Retrato de estado: rubro profundo, moldura barroca e assinatura.</p></label>
+            <label class="pstyle"><input type="radio" name="pstyle" value="deco"><span class="pn"><b>Retrato Art Déco</b><span>1928</span></span><p class="pd">Gelatina e prata: contraste elegante, moldura geométrica dupla.</p></label>
+            <button class="btn btn-solid" id="pGo" style="margin-top:18px" disabled><i data-lucide="brush"></i>Compor retrato</button>
+            <p id="pBusy">compondo a obra<i></i></p>
+          </div>
+          <div>
+            <div id="pEmpty"><i data-lucide="frame"></i><p class="mono">a tela aguarda o seu rosto</p><p style="font-size:12.5px;max-width:34ch">A composição acontece pixel a pixel, aqui no seu dispositivo.</p></div>
+            <div id="pOut">
+              <canvas id="pCanvas"></canvas>
+              <div class="plate">
+                <p class="pt" id="pPlateTitle">«Anônimo Ilustre»</p>
+                <p class="pm" id="pPlateMeta">—</p>
+                <p class="pc" id="pPlateNote"></p>
+              </div>
+              <div class="f-actions" style="justify-content:center;margin-top:22px">
+                <button class="btn" id="pDownload"><i data-lucide="download"></i>Baixar retrato</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="logo" href="#hero" style="font-size:26px">Simulacro<em>.</em></a>
+        <p style="margin-top:16px;max-width:42ch">Dossiê educativo sobre mídia sintética e cyberbullying. Feito para discussão em sala de aula, rodas de conversa e — principalmente — para quem precisa ler isso agora.</p>
+      </div>
+      <div>
+        <h4>Canais de ajuda</h4>
+        <ul>
+          <li><a href="https://www.safernet.org.br" target="_blank" rel="noopener">SaferNet — denúncias digitais</a></li>
+          <li><a href="https://stopncii.org" target="_blank" rel="noopener">StopNCII — bloqueio (adultos)</a></li>
+          <li><a href="https://takeitdown.ncmec.org" target="_blank" rel="noopener">Take It Down — bloqueio (menores)</a></li>
+          <li>Disque 100 — proteção de crianças</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Para ir além</h4>
+        <ul>
+          <li><a href="https://contentcredentials.org" target="_blank" rel="noopener">Content Credentials (C2PA)</a></li>
+          <li><a href="https://deeptrace.org" target="_blank" rel="noopener">Sensity / Deeptrace — relatórios</a></li>
+          <li>Marco Civil da Internet · LGPD</li>
+          <li>Lei 13.718/2018 · ECA</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>Simulacro · projeto educativo fictício</span>
+      <span>Todas as análises rodam localmente no seu navegador</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toasts"></div>
+
+<script>
+/* ================================================================
+   SIMULACRO — script único, sem dependências externas.
+   CORREÇÃO: os ícones agora são SVG inline embutidos (antes vinham
+   de um CDN externo que podia falhar e travar/breakar a página).
+================================================================ */
+(function(){
+"use strict";
+const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const fmt=(n,d=2)=>n.toFixed(d).replace(".",",");
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- sistema de ícones inline (substitui o CDN Lucide) ---------- */
+const ICONS={
+"scan-face":'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+"flask-conical":'<path d="M10 2v7.5a2 2 0 0 1-.2.9L4.7 20.5a1 1 0 0 0 .9 1.5h12.8a1 1 0 0 0 .9-1.5l-5.1-10.1a2 2 0 0 1-.2-.9V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+"fingerprint":'<path d="M12 10a2 2 0 0 0-2 2c0 1-.1 2.5-.3 4"/><path d="M14 13.1c0 2.4 0 6.4-1 8.9"/><path d="M17.3 21c.1-.6.4-2.3.5-3"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .1-5.4 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .3-2"/><path d="M8.7 22c.2-.7.4-1.3.6-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>',
+"scale":'<path d="m16 16 3-8 3 8c-.9.7-1.9 1-3 1s-2.1-.3-3-1Z"/><path d="m2 16 3-8 3 8c-.9.7-1.9 1-3 1s-2.1-.3-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+"life-buoy":'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="m4.9 4.9 4.2 4.2"/><path d="m14.8 9.2 4.3-4.3"/><path d="m14.8 14.8 4.3 4.3"/><path d="m9.2 14.8-4.3 4.3"/>',
+"arrow-right":'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+"rotate-ccw":'<path d="M3 12a9 9 0 1 0 9-9 9.7 9.7 0 0 0-6.7 2.7L3 8"/><path d="M3 3v5h5"/>',
+"alert-triangle":'<path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+"microscope":'<path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/>',
+"brush":'<path d="m9.1 11.9 8-8a2.85 2.85 0 1 1 4 4l-8 8.1"/><path d="M7.1 14.9c-1.7 0-3 1.4-3 3 0 1.3-2.5 1.5-2 2 1.1 1.1 2.5 2 4 2.1 2.2 0 4-1.8 4-4a3 3 0 0 0-3-3.1Z"/>',
+"file-search":'<path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M4.3 21a2 2 0 0 0 1.7 1H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3.1"/><circle cx="11" cy="16" r="3"/><path d="m16 16-2-2"/>',
+"eraser":'<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+"image-up":'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
+"camera":'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/>',
+"aperture":'<circle cx="12" cy="12" r="10"/><path d="m14.3 8 5.7 9.9"/><path d="M9.7 8h11.5"/><path d="m7.4 12 5.7-9.9"/><path d="M9.7 16 4 6.1"/><path d="M14.3 16H2.8"/><path d="m16.6 12-5.7 9.9"/>',
+"x":'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+"frame":'<line x1="22" y1="6" x2="22" y2="18"/><line x1="6" y1="6" x2="6" y2="18"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="6" y1="3" x2="18" y2="3"/><line x1="6" y1="21" x2="18" y2="21"/>',
+"download":'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+"circle":'<circle cx="12" cy="12" r="9"/>'
+};
+function svgIcon(name){
+  const NS="http://www.w3.org/2000/svg";
+  const s=document.createElementNS(NS,"svg");
+  s.setAttribute("viewBox","0 0 24 24");
+  s.setAttribute("fill","none");
+  s.setAttribute("stroke","currentColor");
+  s.setAttribute("stroke-width","2");
+  s.setAttribute("stroke-linecap","round");
+  s.setAttribute("stroke-linejoin","round");
+  s.setAttribute("aria-hidden","true");
+  s.innerHTML=ICONS[name]||ICONS.circle;
+  return s;
+}
+function icons(){
+  $$("i[data-lucide]").forEach(el=>{
+    const s=svgIcon(el.dataset.lucide);
+    const st=el.getAttribute("style"); if(st)s.setAttribute("style",st);
+    if(el.className)s.setAttribute("class",el.className);
+    el.replaceWith(s);
+  });
+}
+icons(); // renderiza imediatamente (o script está no fim do body)
+
+function toast(msg,err=false){
+  const t=document.createElement("div");
+  t.className="toast"+(err?" err":"");
+  t.innerHTML=err
+    ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.1"/></svg>'
+    :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>';
+  t.appendChild(document.createTextNode(msg));
+  $("#toasts").appendChild(t);
+  setTimeout(()=>{t.style.transition="opacity .4s";t.style.opacity="0";setTimeout(()=>t.remove(),400)},4200);
+}
+
+/* ---------- navegação ---------- */
+const hdrLinks=$$("#deskNav a"), secs=hdrLinks.map(a=>$(a.getAttribute("href")));
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){
+    const i=secs.indexOf(e.target);
+    if(i>-1){hdrLinks.forEach(a=>a.classList.remove("on"));hdrLinks[i].classList.add("on");}
+  }});
+},{rootMargin:"-45% 0px -50% 0px"});
+secs.forEach(s=>s&&io.observe(s));
+addEventListener("scroll",()=>{
+  const h=document.documentElement;
+  $("#readbar").style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";
+},{passive:true});
+ $("#menuBtn").addEventListener("click",()=>$("#mobileNav").classList.toggle("open"));
+ $$("#mobileNav a").forEach(a=>a.addEventListener("click",()=>$("#mobileNav").classList.remove("open")));
+
+/* ---------- reveal on scroll ---------- */
+const rvo=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add("on");rvo.unobserve(e.target);}
+}),{threshold:.12});
+ $$(".rv").forEach(el=>rvo.observe(el));
+
+/* ---------- contadores ---------- */
+const cio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return; cio.unobserve(e.target);
+  const el=e.target, target=+el.dataset.val, t0=performance.now(), dur=1600;
+  (function tick(t){
+    const p=clamp((t-t0)/dur,0,1), ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*ease);
+    if(p<1)requestAnimationFrame(tick);
+  })(t0);
+}),{threshold:.5});
+ $$(".count").forEach(el=>cio.observe(el));
+
+/* ---------- rounds do GAN ---------- */
+let round=0, lg=.62, ld=.55;
+setInterval(()=>{
+  if(reduced)return;
+  round+=1+Math.floor(Math.random()*3);
+  $("#ganRound").textContent=String(round).padStart(6,"0");
+  lg=clamp(lg+(Math.random()-.52)*.05,.12,.9); ld=clamp(ld+(Math.random()-.48)*.05,.1,.9);
+  $("#lossG").style.transform=`scaleX(${lg.toFixed(3)})`;
+  $("#lossD").style.transform=`scaleX(${ld.toFixed(3)})`;
+},90);
+
+/* ---------- anatomia: linha de progresso ---------- */
+const anat=$("#anatomia"), items=$$(".atk-item"), atkFill=$("#atkFill");
+let atkTick=false;
+function anatScroll(){
+  atkTick=false;
+  const r=anat.getBoundingClientRect(), vh=innerHeight;
+  const p=clamp((vh*.72-r.top)/r.height,0,1);
+  atkFill.style.height=(p*100)+"%";
+  items.forEach(it=>{
+    const ir=it.getBoundingClientRect();
+    it.classList.toggle("on", ir.top - r.top <= p*r.height);
+  });
+}
+addEventListener("scroll",()=>{if(!atkTick){atkTick=true;requestAnimationFrame(anatScroll);}},{passive:true});
+anatScroll();
+
+/* ================================================================
+   HERO — rosto de partículas original ⇄ sintético
+================================================================ */
+(function heroFace(){
+  const box=$("#heroBox"), cv=$("#heroCanvas"), ctx=cv.getContext("2d");
+  let W=0,H=0,dpr=1,pts=[];
+  const state={g:0,target:0,timer:null};
+
+  function resize(){
+    dpr=Math.min(2,devicePixelRatio||1);
+    W=box.clientWidth;H=box.clientHeight;
+    cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  const P=[];
+  function add(fn,n,w=1){for(let i=0;i<n;i++){const t=(i+.5)/n;const[x,y]=fn(t);P.push({x,y,w});}}
+  function build(){
+    P.length=0;
+    const chin=t=>{const a=t*Math.PI*2-Math.PI/2;
+      let x=Math.sin(a)*.50,y=-Math.cos(a)*.66;
+      if(y>.05){const k=Math.min(1,(y-.05)/.5);x*=1-.34*k*k;}
+      return[x,y];};
+    add(chin,170,1.15);
+    add(t=>{const a=Math.PI*(1+t);return[Math.cos(a)*.565,-.06+Math.sin(a)*.63];},95,1.35);
+    add(t=>{const a=Math.PI*(1+t);return[Math.cos(a)*.47,-.06+Math.sin(a)*.51];},70,1);
+    for(const s of[-1,1]){
+      add(t=>{const a=t*Math.PI*2;return[s*.21+Math.cos(a)*.115,-.16+Math.sin(a)*.055];},40,1.15);
+      add(t=>{const a=t*Math.PI*2;return[s*.21+Math.cos(a)*.034,-.16+Math.sin(a)*.034];},14,2.1);
+      add(t=>[s*(.09+.24*t),-.285-.055*Math.sin(t*Math.PI)],26,1);
+      add(t=>{const a=Math.PI*(t-.5);return[s*.505+Math.cos(a)*.045,-.02+Math.sin(a)*.09];},16,1);
+      add(t=>[s*.058,-(0.085)+.03*Math.cos(t*Math.PI)],8,1.2);
+    }
+    add(t=>[.024*Math.sin(t*Math.PI*1.2),-.14+.22*t],22,1);
+    add(t=>{const u=1-t;return[u*u*(-.155)+2*u*t*0+t*t*.155, u*u*.27+2*u*t*.215+t*t*.27];},36,1.35);
+    add(t=>{const u=1-t;return[u*u*(-.155)+2*u*t*0+t*t*.155, u*u*.27+2*u*t*.375+t*t*.27];},30,1.1);
+    P.forEach(p=>{p.ph=Math.random()*Math.PI*2;p.sp=.4+Math.random()*.8;
+      p.fl=Math.random()<.12;p.fx=(Math.random()-.5)*34;p.fy=(Math.random()-.5)*30;
+      p.th=Math.random();});
+    pts=P;
+  }
+  let mouse={x:-999,y:-999};
+  box.addEventListener("mousemove",e=>{
+    const r=box.getBoundingClientRect();
+    mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;
+    const cr=$("#cross");cr.style.opacity="1";
+    cr.style.transform=`translate(${mouse.x-13}px,${mouse.y-13}px)`;
+    const cp=$("#crossPos");cp.style.opacity="1";
+    cp.style.transform=`translate(${mouse.x+14}px,${mouse.y+10}px)`;
+    cp.textContent=`x ${Math.round(mouse.x)} · y ${Math.round(mouse.y)}`;
+  });
+  box.addEventListener("mouseleave",()=>{mouse.x=-999;mouse.y=-999;$("#cross").style.opacity="0";$("#crossPos").style.opacity="0";});
+
+  function setHUD(){
+    const syn=state.target===1;
+    $("#hudState").textContent=syn?"ESTADO: SINTÉTICO DETECTADO":"ESTADO: CAPTURA ORIGINAL";
+    $("#hudState").classList.toggle("synthetic",syn);
+    $("#hudDot").classList.toggle("synthetic",syn);
+    $("#confFill").style.width=syn?"96%":"0%";
+    $("#confFill").classList.toggle("synthetic",syn);
+    $("#hudConf").textContent=syn?"classificador: síntese ia":"sem sinais de síntese";
+  }
+  function toggle(){state.target=1-state.target;setHUD();}
+  function auto(){clearInterval(state.timer);if(!reduced)state.timer=setInterval(toggle,4800);}
+  box.addEventListener("click",e=>{if(!e.target.closest("button")){toggle();auto();}});
+  $("#glitchBtn").addEventListener("click",e=>{e.stopPropagation();toggle();auto();});
+  auto();
+
+  let last=performance.now();
+  function frame(now){
+    const dt=Math.min(.05,(now-last)/1000);last=now;
+    state.g+=(state.target-state.g)*Math.min(1,dt*4.5);
+    const g=state.g, t=now/1000, S=Math.min(W,H)*.72, cx=W*.5, cy=H*.52;
+    ctx.clearRect(0,0,W,H);
+    if(g>.05){
+      ctx.fillStyle=`rgba(78,124,255,${.14*g})`;
+      const y1=((t*90)%(H+80))-40, y2=H-(((t*60)%(H+80))-40);
+      ctx.fillRect(0,y1,W,1.5);ctx.fillRect(0,y2,W,1);
+      for(let i=0;i<5;i++){
+        const bx=(Math.sin(i*37+t*2.3)*.5+.5)*W, by=(Math.sin(i*91+t*1.7)*.5+.5)*H;
+        ctx.fillStyle=`rgba(255,90,78,${.10*g*(Math.sin(t*9+i)>0?1:.2)})`;
+        ctx.fillRect(bx,by,26+i*7,3);
+      }
+    }
+    for(let i=0;i<pts.length;i++){
+      const p=pts[i];
+      let x=p.x*S+cx, y=p.y*S+cy;
+      x+=Math.sin(t*p.sp+p.ph)*1.3; y+=Math.cos(t*p.sp*.8+p.ph)*1.3;
+      if(g>.01){
+        x+=g*7*Math.sin(t*13+i*1.7);
+        y+=g*7*Math.sin(t*17+i*2.3);
+        if(p.fl){x+=g*p.fx;y+=g*p.fy;}
+      }
+      const dx=x-mouse.x,dy=y-mouse.y,d2=dx*dx+dy*dy;
+      if(d2<12100){const d=Math.sqrt(d2)||1,f=(1-d/110)*24;x+=dx/d*f;y+=dy/d*f;}
+      const hot=p.th<g*.35, err=p.th<g*.06;
+      ctx.fillStyle=err?"rgba(255,90,78,.9)":hot?"rgba(78,124,255,.85)":`rgba(219,228,250,${.32+p.w*.18})`;
+      const r=1+p.w*.5+(hot?g*1.2:0);
+      ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  new ResizeObserver(resize).observe(box);
+  resize();requestAnimationFrame(frame);
+})();
+
+/* ================================================================
+   QUIZ
+================================================================ */
+(function quiz(){
+  const QS=[
+    {t:"Um vídeo de 20 segundos mostra uma prefeita anunciando o fim das aulas “para sempre”. A voz lembra a dela, mas em dois trechos o movimento dos lábios não fecha com o áudio — e, num frame, a mão segurando o papel tem seis dedos.",a:"fake",e:"Dessincronia labial e anomalias nas mãos estão entre as falhas mais comuns de geração. Vale sempre conferir em fonte oficial antes de repassar."},
+    {t:"A foto de um reencontro de turma circula no grupo. Os reflexos da janela aparecem de forma coerente nos óculos de três pessoas, as sombras apontam para o mesmo lado e o arquivo guarda metadados de uma câmera antiga, com data de 2014.",a:"real",e:"Consistência física da luz e metadados de origem de câmera apontam para captura genuína. Nem tudo que circula é falso — mas tudo merece verificação."},
+    {t:"Um áudio de 11 segundos, no nome do diretor da escola, pede que você envie um código recebido por SMS “com urgência, antes da próxima aula”. A voz é convincente — e a pressa é o principal argumento.",a:"fake",e:"Clonagem de voz exige poucos segundos de amostra. Urgência artificial + pedido de código/senha é o padrão clássico da fraude. Na dúvida, ligue de volta para um número que você já conhece."},
+    {t:"No retrato de uma cantora em um tapete vermelho, a pele está uniforme como plástico, um brinco se funde com a mandíbula e o padrão do fundo “derrete” atrás do ombro dela.",a:"fake",e:"Pele sem textura, fusões entre objetos e fundos inconsistentes são erros típicos de modelos de difusão. Amplie a imagem: os defeitos moram nas bordas."},
+    {t:"Um vídeo antigo de 2016 volta a circular com uma legenda nova e alarmante. A imagem tem cortes naturais de câmera, sombras consistentes — e a legenda mente sobre o que o vídeo realmente mostra.",a:"real",e:"O vídeo é autêntico, mas a contextualização é a arma: desinformação não precisa de deepfake. Verifique a origem e a data antes de acreditar na moldura, não só no conteúdo."}
+  ];
+  let i=0,score=0,answered=false;
+  const qT=$("#qText"),qN=$("#qNum"),qF=$("#qFeedback"),qNxt=$("#qNext"),qBar=$("#qBar");
+  function show(){
+    answered=false;
+    qN.textContent=`Cenário ${i+1} / ${QS.length}`;
+    qT.textContent=QS[i].t;
+    qF.style.display="none";qNxt.style.display="none";
+    $("#btnReal").disabled=false;$("#btnFake").disabled=false;
+    qBar.style.width=(i/QS.length*100)+"%";
+  }
+  function answer(choice){
+    if(answered)return;answered=true;
+    const ok=choice===QS[i].a; if(ok)score++;
+    qBar.style.width=((i+1)/QS.length*100)+"%";
+    qF.className=ok?"ok":"bad";
+    qF.style.display="block";
+    qF.innerHTML=`<b>${ok?"Correto.":"Não foi dessa vez."} — este cenário é ${QS[i].a==="real"?"REAL":"SINTÉTICO"}.</b>${QS[i].e}`;
+    qNxt.style.display="inline-flex";
+    qNxt.innerHTML=(i===QS.length-1?"Ver resultado":"Próximo cenário")+'<i data-lucide="arrow-right"></i>';
+    icons();
+    $("#btnReal").disabled=true;$("#btnFake").disabled=true;
+  }
+  $("#btnReal").addEventListener("click",()=>answer("real"));
+  $("#btnFake").addEventListener("click",()=>answer("fake"));
+  qNxt.addEventListener("click",()=>{
+    if(i<QS.length-1){i++;show();}
+    else{
+      $("#qMain").style.display="none";$("#qResult").style.display="block";
+      $("#qScore").textContent=score;
+      $("#qVerdict").textContent=score===5?"Olhar forense afiado: você desconfiou exatamente onde devia."
+        :score>=3?"Bom instinto — reveja os sinais da seção 03 e tente novamente."
+        :"Atenção: com esse radar, você seria o alvo fácil. Releia a linha de defesa antes de repassar qualquer conteúdo.";
+    }
+  });
+  $("#qRestart").addEventListener("click",()=>{i=0;score=0;$("#qResult").style.display="none";$("#qMain").style.display="block";show();});
+  show();
+})();
+
+/* ================================================================
+   ABAS
+================================================================ */
+ $$(".dtab").forEach(b=>b.addEventListener("click",()=>{
+  $$(".dtab").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  $$(".dpanel").forEach(p=>p.classList.remove("on"));$("#"+b.dataset.tab).classList.add("on");
+}));
+ $$(".ltab").forEach(b=>b.addEventListener("click",()=>{
+  $$(".ltab").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  $$(".lpanel").forEach(p=>p.classList.remove("on"));$("#lab-"+b.dataset.lab).classList.add("on");
+}));
+ $$(".pstyle").forEach(l=>l.querySelector("input").addEventListener("change",()=>{
+  $$(".pstyle").forEach(x=>x.classList.remove("sel"));l.classList.add("sel");
+}));
+
+/* ================================================================
+   UTILITÁRIOS DE CANVAS / ARQUIVOS
+================================================================ */
+function mkC(w,h){const c=document.createElement("canvas");c.width=w;c.height=h;return c;}
+function cx(c){return c.getContext("2d",{willReadFrequently:true});}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+async function fileToImage(file){
+  const url=URL.createObjectURL(file);
+  const img=await loadImg(url);
+  return {img,url};
+}
+function fitCanvas(img,max){
+  const s=Math.min(1,max/Math.max(img.width,img.height));
+  const w=Math.max(2,Math.round(img.width*s)),h=Math.max(2,Math.round(img.height*s));
+  const c=mkC(w,h);cx(c).drawImage(img,0,0,w,h);return c;
+}
+function gridCV(cell){
+  const m=cell.reduce((a,b)=>a+b,0)/cell.length;
+  if(m<1e-6)return 0;
+  const sd=Math.sqrt(cell.reduce((a,b)=>a+(b-m)*(b-m),0)/cell.length);
+  return sd/m;
+}
+function verdClass(l){return l<.33?"verd-lo":l<.66?"verd-md":"verd-hi";}
+function verdText(l){return l<.33?"DENTRO DO ESPERADO":l<.66?"ATENÇÃO":"ANOMALIA";}
+function verdColor(l){return l<.33?"var(--azul2)":l<.66?"var(--ink)":"var(--coral)";}
+
+/* ================================================================
+   MESA FORENSE
+================================================================ */
+(function forense(){
+  const dz=$("#fdz"),fileIn=$("#fFile");
+  let busy=false;
+
+  dz.addEventListener("click",()=>fileIn.click());
+  dz.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileIn.click();}});
+  ["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
+  dz.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+  fileIn.addEventListener("change",()=>{if(fileIn.files[0])handleFile(fileIn.files[0]);fileIn.value="";});
+  $("#fReset").addEventListener("click",()=>{
+    $("#fStage").style.display="none";$("#fReset").disabled=true;
+    toast("Análise limpa.");
+  });
+
+  /* ---- amostra sintética procedural ---- */
+  $("#fSample").addEventListener("click",async()=>{
+    const W=720,H=900,c=mkC(W,H),x=cx(c);
+    const bg=x.createRadialGradient(W/2,H*.35,60,W/2,H*.5,W*.75);
+    bg.addColorStop(0,"#3a4050");bg.addColorStop(1,"#12141a");
+    x.fillStyle=bg;x.fillRect(0,0,W,H);
+    x.fillStyle="#1a1e28";x.beginPath();x.ellipse(W/2,H*1.02,W*.52,H*.30,0,Math.PI,0);x.fill();
+    const sk=x.createRadialGradient(W*.46,H*.34,30,W*.5,H*.42,W*.34);
+    sk.addColorStop(0,"#e2b896");sk.addColorStop(1,"#a5795a");
+    x.fillStyle=sk;x.beginPath();x.ellipse(W/2,H*.40,W*.21,H*.265,0,0,7);x.fill();
+    x.fillStyle="#241d18";x.beginPath();x.ellipse(W/2,H*.245,W*.225,H*.15,0,Math.PI,0);x.fill();
+    for(const s of[-1,1]){
+      x.fillStyle="#e8e2d6";x.beginPath();x.ellipse(W/2+s*W*.08,H*.37,W*.045,H*.022,0,0,7);x.fill();
+      x.fillStyle="#3a4d66";x.beginPath();x.arc(W/2+s*W*.08,H*.37,W*.016,0,7);x.fill();
+      x.strokeStyle="#241d18";x.lineWidth=4;x.beginPath();x.moveTo(W/2+s*W*.03,H*.335);x.quadraticCurveTo(W/2+s*W*.08,H*.325,W/2+s*W*.13,H*.335);x.stroke();
+    }
+    x.strokeStyle="#8a6a50";x.lineWidth=5;x.beginPath();x.moveTo(W/2,H*.39);x.lineTo(W/2,H*.45);x.stroke();
+    x.beginPath();x.moveTo(W/2-H*.02,H*.455);x.quadraticCurveTo(W/2,H*.475,W/2+W*.055,H*.458);x.stroke();
+    x.strokeStyle="#7a4438";x.lineWidth=6;x.beginPath();x.moveTo(W/2-W*.075,H*.53);x.quadraticCurveTo(W/2,H*.555,W/2+W*.075,H*.53);x.stroke();
+    const small=mkC(Math.round(W*.16),Math.round(H*.16));
+    cx(small).drawImage(c,0,0,small.width,small.height);
+    x.save();x.globalAlpha=.55;x.imageSmoothingQuality="high";
+    x.drawImage(small,0,0,W,H);x.restore();
+    const nz=mkC(W,H),nx=cx(nz),nd=nx.createImageData(W,H);
+    for(let i=0;i<nd.data.length;i+=4){const n=(Math.random()-.5)*70;nd.data[i]=128+n;nd.data[i+1]=128+n;nd.data[i+2]=128+n;nd.data[i+3]=255;}
+    nx.putImageData(nd,0,0);
+    x.save();x.drawImage(nz,0,0);
+    x.globalCompositeOperation="destination-out";
+    const cut=x.createRadialGradient(W/2,H*.42,10,W/2,H*.42,W*.30);
+    cut.addColorStop(0,"rgba(0,0,0,.96)");cut.addColorStop(1,"rgba(0,0,0,0)");
+    x.fillStyle=cut;x.fillRect(0,0,W,H);x.restore();
+    x.save();x.beginPath();x.arc(W*.80,H*.80,34,0,7);x.clip();
+    x.fillStyle="#c9a24b";x.fillRect(W*.80-34,H*.80-34,68,68);
+    for(let i=0;i<400;i++){x.fillStyle=`rgba(${Math.random()>.5?255:20},${Math.random()>.5?200:30},60,.25)`;x.fillRect(W*.80-34+Math.random()*68,H*.80-34+Math.random()*68,2,2);}
+    x.restore();
+    c.toBlob(async b=>{
+      const f=new File([b],"amostra-sintetica.png",{type:"image/png"});
+      toast("Amostra sintética gerada localmente — observe como os testes reagem.");
+      await handleFile(f);
+    },"image/png");
+  });
+
+  /* ---- pipeline principal ---- */
+  async function handleFile(file){
+    if(busy)return;
+    if(!/^(image|video)\//.test(file.type)){toast("Formato não suportado — envie imagem ou vídeo.",true);return;}
+    busy=true;$("#fReset").disabled=false;
+    try{
+      if(file.type.startsWith("image/")){
+        const {img}=await fileToImage(file);
+        await runAnalysis(fitCanvas(img,560),img,file,null);
+      }else{
+        await runVideo(file);
+      }
+    }catch(err){
+      console.error(err);
+      toast("Não consegui processar este arquivo — tente outro formato.",true);
+    }
+    busy=false;
+  }
+
+  async function runVideo(file){
+    const url=URL.createObjectURL(file);
+    const v=document.createElement("video");
+    v.muted=true;v.playsInline=true;v.src=url;
+    await new Promise((res,rej)=>{v.onloadeddata=res;v.onerror=rej;setTimeout(rej,6000);});
+    const dur=v.duration||1;
+    const ts=[Math.min(dur*.1,dur-.1),Math.min(dur*.5,dur-.1),Math.min(dur*.85,dur-.1)];
+    const frames=[];
+    for(const t of ts){
+      await new Promise(res=>{const done=()=>res();v.onseeked=done;v.currentTime=t;setTimeout(done,2500);});
+      const c=mkC(480,Math.round(480*(v.videoHeight/v.videoWidth)||360));
+      cx(c).drawImage(v,0,0,c.width,c.height);
+      frames.push(c);
+    }
+    URL.revokeObjectURL(url);
+    await runAnalysis(frames[1],frames[1],file,frames);
+  }
+
+  function noiseSD(c){
+    const w=c.width,h=c.height,d=cx(c).getImageData(0,0,w,h).data;
+    let sum=0,sum2=0,n=0;
+    for(let y=1;y<h-1;y+=2)for(let xx=1;xx<w-1;xx+=2){
+      const i=(y*w+xx)*4,l=.299*d[i]+.587*d[i+1]+.114*d[i+2];
+      const l1=.299*d[i-4]+.587*d[i-3]+.114*d[i-2];
+      const l2=.299*d[i+4]+.587*d[i+5]+.114*d[i+6];
+      const l3=.299*d[i-w*4]+.587*d[i-w*4+1]+.114*d[i-w*4+2];
+      const l4=.299*d[i+w*4]+.587*d[i+w*4+1]+.114*d[i+w*4+2];
+      const lap=4*l-l1-l2-l3-l4; sum+=lap;sum2+=lap*lap;n++;
+    }
+    const m=sum/n;return Math.sqrt(Math.max(0,sum2/n-m*m));
+  }
+
+  async function runAnalysis(c,src,file,frames){
+    const w=c.width,h=c.height,x=cx(c),data=x.getImageData(0,0,w,h);
+    $("#fOrig").width=Math.min(200,w);$("#fOrig").height=Math.round($("#fOrig").width*h/w);
+    cx($("#fOrig")).drawImage(c,0,0,$("#fOrig").width,$("#fOrig").height);
+    const fileName=file.name||"quadro-do-video";
+    $("#fMeta").innerHTML=
+      `<b>${fileName}</b><br>tipo ${file.type||"—"} · ${(file.size/1024).toFixed(0)} KB`+
+      (src.width?`<br>dimensões originais ${src.width}×${src.height}px`:"")+
+      (frames?`<br>3 quadros amostrados para consistência temporal`:"");
+
+    /* ===== teste A · ELA ===== */
+    const jpeg=c.toDataURL("image/jpeg",.72);
+    const img2=await loadImg(jpeg);
+    const c2=mkC(w,h);cx(c2).drawImage(img2,0,0,w,h);
+    const d2=cx(c2).getImageData(0,0,w,h).data;
+    const ela=mkC(w,h),ex=cx(ela),ed=ex.createImageData(w,h);
+    const GC=8,GR=8,cellE=new Array(GC*GR).fill(0),cellN=new Array(GC*GR).fill(0);
+    const d1=data.data;
+    for(let y=0;y<h;y++)for(let xx=0;xx<w;xx++){
+      const i=(y*w+xx)*4;
+      const e=Math.abs(d1[i]-d2[i])+Math.abs(d1[i+1]-d2[i+1])+Math.abs(d1[i+2]-d2[i+2]);
+      const v=Math.min(255,e*2.2);
+      ed.data[i]=v*.9;ed.data[i+1]=v*.95;ed.data[i+2]=v;ed.data[i+3]=255;
+      const gi=Math.min(GC-1,xx/w*GC|0),gi2=Math.min(GR-1,y/h*GR|0);
+      cellE[gi2*GC+gi]+=e;cellN[gi2*GC+gi]++;
+    }
+    ex.putImageData(ed,0,0);
+    const elaCV=gridCV(cellE.map((v,i)=>v/cellN[i]));
+    drawTo("cvEla",ela);
+
+    /* ===== teste B · ruído ===== */
+    const lum=new Float32Array(w*h);
+    for(let i=0,j=0;i<d1.length;i+=4,j++)lum[j]=.299*d1[i]+.587*d1[i+1]+.114*d1[i+2];
+    const nz=mkC(w,h),nx=cx(nz),nd=nx.createImageData(w,h);
+    const NG=6,cells=new Array(NG*NG).fill(0),cnts=new Array(NG*NG).fill(0);
+    let cE=0,cN=0,eE=0,eN=0;
+    for(let y=1;y<h-1;y++)for(let xx=1;xx<w-1;xx++){
+      const j=y*w+xx;
+      const lap=4*lum[j]-lum[j-1]-lum[j+1]-lum[j-w]-lum[j+w];
+      const a=Math.abs(lap);
+      nd.data[j*4]=Math.min(255,a*3.4)*.85;nd.data[j*4+1]=Math.min(255,a*3.4)*.9;nd.data[j*4+2]=Math.min(255,80+a*3.4);nd.data[j*4+3]=255;
+      const gi=(Math.min(NG-1,y/h*NG|0))*NG+Math.min(NG-1,xx/w*NG|0);
+      cells[gi]+=lap*lap;cnts[gi]++;
+      if(xx>w*.3&&xx<w*.7&&y>h*.25&&y<h*.75){cE+=a*a;cN++;}else{eE+=a*a;eN++;}
+    }
+    nx.putImageData(nd,0,0);
+    drawTo("cvNoise",nz);
+    const sds=cells.map((v,i)=>Math.sqrt(v/Math.max(1,cnts[i])));
+    const noiseCV=gridCV(sds);
+    const ratio=Math.sqrt(cE/Math.max(1,cN))/(Math.sqrt(eE/Math.max(1,eN))+1e-6);
+    const lvlSmooth=clamp((0.85-ratio)/0.65,0,1);
+    const lvlCV=clamp((noiseCV-0.55)/0.55,0,1);
+    const lvlNoise=clamp(.6*lvlSmooth+.4*lvlCV,0,1);
+
+    /* ===== teste C · contornos ===== */
+    const eg=mkC(w,h),egx=cx(eg),egd=egx.createImageData(w,h);
+    const EC=6,ec=new Array(EC*EC).fill(0),en=new Array(EC*EC).fill(0);
+    for(let y=1;y<h-1;y++)for(let xx=1;xx<w-1;xx++){
+      const j=y*w+xx;
+      const gx=lum[j-w-1]+2*lum[j-1]+lum[j+w-1]-lum[j-w+1]-2*lum[j+1]-lum[j+w+1];
+      const gy=lum[j-w-1]+2*lum[j-w]+lum[j-w+1]-lum[j+w-1]-2*lum[j+w]-lum[j+w+1];
+      const m=Math.sqrt(gx*gx+gy*gy);
+      egd.data[j*4]=Math.min(255,m*1.5)*.8;egd.data[j*4+1]=Math.min(255,m*1.5)*.9;egd.data[j*4+2]=Math.min(255,m*1.5);egd.data[j*4+3]=255;
+      const gi=(Math.min(EC-1,y/h*EC|0))*EC+Math.min(EC-1,xx/w*EC|0);
+      if(m>90)ec[gi]++;en[gi]++;
+    }
+    egx.putImageData(egd,0,0);
+    drawTo("cvEdge",eg);
+    const dens=ec.map((v,i)=>v/Math.max(1,en[i]));
+    const edgeCV=gridCV(dens);
+    const lvlEdge=clamp((edgeCV-0.7)/0.7,0,1)*.85;
+
+    /* ===== teste D · procedência ===== */
+    const buf=await file.arrayBuffer();
+    const str=new TextDecoder("latin1").decode(new Uint8Array(buf).slice(0,2_000_000));
+    const cams=["Apple","iPhone","Samsung","Canon","NIKON","SONY","Xiaomi","Motorola","Google","HUAWEI","OnePlus","Pixel","GoPro","FUJIFILM","Panasonic","LG Electronics"];
+    const editors=["Adobe","Photoshop","Lightroom","GIMP","Pixelmator","Snapseed","Figma","Canva","Midjourney","DALL","Stable Diffusion","Firefly"];
+    const hasC2PA=/c2pa|caBX|jumbf/i.test(str);
+    const cam=cams.find(m=>str.includes(m));
+    const ed2=editors.find(m=>str.includes(m));
+    let lvlMeta,detailMeta;
+    if(hasC2PA){lvlMeta=.02;detailMeta="credenciais de conteúdo (C2PA) presentes — prova de origem";}
+    else if(cam){lvlMeta=.08;detailMeta=`origem de câmera detectada (${cam})`;}
+    else if(ed2){lvlMeta=.32;detailMeta=`passagem por editor (${ed2}) — origem remota`;}
+    else{lvlMeta=.5;detailMeta="sem metadados de câmera — sem prova de origem";}
+
+    const metrics=[
+      {n:"A · Erro de compressão (ELA)",v:`variância inter-regiões ${fmt(elaCV)}`,l:clamp((elaCV-0.45)/0.45,0,1),d:clamp((elaCV-0.45)/0.45,0,1)>.5?"blocos com pressão de compressão distinta":"compressão homogênea"},
+      {n:"B · Textura de ruído",v:`rosto/fundo ${fmt(ratio)} · cv ${fmt(noiseCV)}`,l:lvlNoise,d:lvlSmooth>.55?"região central lisa demais frente a um fundo texturizado":"grão consistente entre regiões"},
+      {n:"C · Contornos (Sobel)",v:`variância de bordas ${fmt(edgeCV)}`,l:lvlEdge,d:lvlEdge>.5?"densidade de contornos salta entre regiões":"contornos distribuídos de forma natural"},
+      {n:"D · Procedência",v:detailMeta,l:lvlMeta,d:lvlMeta>.4?"arquivo não comprova sua origem":"cadeia de custódia razoável"}
+    ];
+    const score=Math.round(100*clamp(.35*metrics[0].l+.35*metrics[1].l+.15*metrics[2].l+.15*metrics[3].l,0,1));
+
+    $("#fStage").style.display="block";
+    const mwrap=$("#fMetrics");mwrap.innerHTML="";
+    metrics.forEach(m=>{
+      const row=document.createElement("div");row.className="mrow";
+      row.innerHTML=`<div><b style="color:var(--ink)">${m.n}</b></div>
+        <div class="mv">${m.v}</div>
+        <div class="mtrack"><i style="width:${Math.round(m.l*100)}%;background:${verdColor(m.l)}"></i></div>
+        <div class="mv ${verdClass(m.l)}" style="font-size:10.5px;letter-spacing:.08em">${verdText(m.l)}</div>`;
+      mwrap.appendChild(row);
+    });
+    setVerd("vEla",metrics[0].l);setVerd("vNoise",metrics[1].l);setVerd("vEdge",metrics[2].l);
+    const arc=$("#gaugeArc");
+    arc.style.strokeDashoffset=264*(1-score/100);
+    arc.style.stroke=score<35?"var(--azul)":score<65?"var(--ink)":"var(--coral)";
+    const gn=$("#gaugeNum");const t0=performance.now();
+    (function tick(t){const p=clamp((t-t0)/1100,0,1);gn.textContent=Math.round(score*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tick);})(t0);
+    $("#gaugeLabel").textContent=score<35?"baixo — sem sinais relevantes":score<65?"misto — exige contexto":"alto — sinais fortes de edição/síntese";
+    $("#fConc").innerHTML=`<b>Leitura final:</b> ${score<35
+      ?"os testes não encontraram sinais relevantes de manipulação — mas ausência de sinais não é prova de autenticidade."
+      :score<65?"há sinais contraditórios. Compare com o contexto, a fonte e a data antes de acreditar — ou duvidar."
+      :"diversos testes apontam na mesma direção: trate este arquivo com forte desconfiança e exija a origem."}`;
+
+    const th=$("#fTempo");
+    if(frames){
+      th.style.display="block";
+      th.innerHTML="<p class='mlabel' style='margin-bottom:12px'>quadros amostrados & consistência temporal</p>";
+      const box=document.createElement("div");box.className="thumbs";
+      frames.forEach(f=>{const t=mkC(120,Math.round(120*f.height/f.width));cx(t).drawImage(f,0,0,t.width,t.height);box.appendChild(t);});
+      th.appendChild(box);
+      const sdsF=frames.map(noiseSD);
+      const mean=(sdsF[0]+sdsF[1]+sdsF[2])/3;
+      const spread=(Math.max(...sdsF)-Math.min(...sdsF))/(mean+1e-6);
+      const lvl=clamp((spread-.15)/.35,0,1);
+      const row=document.createElement("div");row.className="trow";
+      row.innerHTML=`<span class="mono">ruído entre quadros: ${fmt(spread*100,1)}% de flutuação</span>
+        <span class="${verdClass(lvl)}" style="font-size:11px;letter-spacing:.08em">${verdText(lvl)} — ${lvl>.5?"textura muda demais entre quadros da mesma cena":"textura estável ao longo do tempo"}</span>`;
+      th.appendChild(row);
+    }else{th.style.display="none";}
+    toast("Análise concluída — leia os sinais, não só a nota.");
+  }
+
+  function drawTo(id,src){
+    const t=$("#"+id);t.width=src.width;t.height=src.height;
+    cx(t).drawImage(src,0,0);
+  }
+  function setVerd(id,l){const el=$("#"+id);el.textContent=verdText(l);el.className=verdClass(l);}
+})();
+
+/* ================================================================
+   RETRATO DE ÉPOCA
+================================================================ */
+(function retrato(){
+  const dz=$("#pdz"),fileIn=$("#pFile"),go=$("#pGo");
+  let srcImg=null,busy=false;
+  const STYLES={
+    rena:{nome:"Retrato Renascentista",meta:"óleo sobre tela · oficina da Toscana, c. 1490",
+      nota:"Reprodução estilizada: a pintura simula a mão de um mestre, mas o rosto retratado é — e permanece — o do voluntário.",
+      ops:{blur:.5,poster:12,lut:{r:[1.07,.035],g:[.965,.02],b:[.8,.02]},vign:[.55,"#4a3418"],weave:.05,grain:10,frame:"gold",sig:true}},
+    dag:{nome:"Daguerreótipo",meta:"placa prateada · estúdio Dubois & Cia., Paris, c. 1845",
+      nota:"O grão e os arranhões imitam a placa de cobre prateado original de 1845. Nenhum pixel de rosto foi sintetizado.",
+      ops:{map:"dag",blur:.28,vign:[.7,"#241d14"],grain:26,scratch:12,frame:"metal"}},
+    imp:{nome:"Retrato de Corte",meta:"retrato de estado · corte de verão, c. 1812",
+      nota:"A moldura barroca e a assinatura são desenhadas por código; a identidade, porém, não foi tocada.",
+      ops:{blur:.42,poster:10,lut:{r:[1.06,.03],g:[.9,0],b:[.72,0]},vign:[.62,"#2a0f0f"],weave:.04,grain:12,frame:"baroque",sig:true}},
+    deco:{nome:"Retrato Art Déco",meta:"gelatina e prata · studio lumen, 1928",
+      nota:"Contraste de filme p&B e moldura geométrica — estética de época aplicada sobre a sua fotografia original.",
+      ops:{map:"deco",blur:.18,vign:[.4,"#141821"],grain:14,frame:"deco"}}
+  };
+
+  dz.addEventListener("click",()=>fileIn.click());
+  dz.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileIn.click();}});
+  ["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
+  dz.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f)setImageFile(f);});
+  fileIn.addEventListener("change",()=>{if(fileIn.files[0])setImageFile(fileIn.files[0]);fileIn.value="";});
+
+  async function setImageFile(f){
+    if(!f.type.startsWith("image/")){toast("Para o retrato, envie uma imagem.",true);return;}
+    try{
+      const {img}=await fileToImage(f);
+      srcImg=img;go.disabled=false;
+      toast("Foto carregada — escolha o estilo e componha o retrato.");
+    }catch{toast("Não consegui abrir esta imagem.",true);}
+  }
+
+  let stream=null;
+  $("#pCam").addEventListener("click",async()=>{
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280}}});
+      $("#camVideo").srcObject=stream;$("#camBox").style.display="block";
+      toast("Câmera ativada — a imagem não sai do seu dispositivo.");
+    }catch{toast("Acesso à câmera negado ou indisponível.",true);}
+  });
+  $("#camClose").addEventListener("click",stopCam);
+  function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}$("#camBox").style.display="none";}
+  $("#camShot").addEventListener("click",()=>{
+    const v=$("#camVideo");if(!v.videoWidth)return;
+    const c=mkC(v.videoWidth,v.videoHeight);
+    cx(c).translate(c.width,0);cx(c).scale(-1,1);cx(c).drawImage(v,0,0);
+    const img=new Image();img.onload=()=>{srcImg=img;go.disabled=false;stopCam();toast("Quadro capturado — pronto para compor.");};
+    img.src=c.toDataURL("image/jpeg",.92);
+  });
+
+  function coverDraw(img,W,H){
+    const c=mkC(W,H),x=cx(c),s=Math.max(W/img.width,H/img.height);
+    x.drawImage(img,(W-img.width*s)/2,(H-img.height*s)/2,img.width*s,img.height*s);
+    return c;
+  }
+  function scaleC(c,f){const w=Math.max(1,Math.round(c.width*f)),h=Math.max(1,Math.round(c.height*f));const s=mkC(w,h);cx(s).drawImage(c,0,0,w,h);return s;}
+  function blurMix(c,mix){
+    const s=scaleC(c,.13),b=mkC(c.width,c.height),bx=cx(b);
+    bx.imageSmoothingQuality="high";bx.drawImage(s,0,0,b.width,b.height);
+    const o=mkC(c.width,c.height),ox=cx(o);ox.drawImage(c,0,0);ox.globalAlpha=mix;ox.drawImage(b,0,0);
+    return o;
+  }
+  function lut(mul,lift,gamma=1){
+    const t=new Uint8Array(256);
+    for(let i=0;i<256;i++){const v=(i/255)*mul+lift;t[i]=Math.round(Math.pow(clamp(v,0,1),gamma)*255);}
+    return t;
+  }
+  function hex2rgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+  function mixHex(a,b,t){const A=hex2rgb(a),B=hex2rgb(b);return[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t];}
+  function pixelPass(c,o){
+    const x=cx(c),d=x.getImageData(0,0,c.width,c.height),p=d.data;
+    const lr=o.lutR,lg2=o.lutG,lb=o.lutB,q=o.poster?(o.poster-1):0;
+    for(let i=0;i<p.length;i+=4){
+      let r,g,b;
+      if(o.mapFn){const l=.299*p[i]+.587*p[i+1]+.114*p[i+2];const m=o.mapFn(l);r=m[0];g=m[1];b=m[2];}
+      else{r=lr[p[i]];g=lg2[p[i+1]];b=lb[p[i+2]];}
+      if(q){r=Math.round(r/255*q)/q*255;g=Math.round(g/255*q)/q*255;b=Math.round(b/255*q)/q*255;}
+      p[i]=clamp(r,0,255);p[i+1]=clamp(g,0,255);p[i+2]=clamp(b,0,255);
+    }
+    x.putImageData(d,0,0);
+  }
+  function vignette(c,st,col){
+    const x=cx(c),v=mkC(c.width,c.height),vx=cx(v);
+    const R=Math.hypot(c.width,c.height)/2;
+    const g=vx.createRadialGradient(c.width/2,c.height/2,R*.35,c.width/2,c.height/2,R);
+    g.addColorStop(0,"#ffffff");g.addColorStop(1,col);
+    vx.fillStyle=g;vx.fillRect(0,0,c.width,c.height);
+    x.globalCompositeOperation="multiply";x.drawImage(v,0,0);x.globalCompositeOperation="source-over";
+  }
+  function grain(c,amt){
+    const x=cx(c),d=x.getImageData(0,0,c.width,c.height),p=d.data;
+    for(let i=0;i<p.length;i+=4){const n=(Math.random()-.5)*2*amt;p[i]+=n;p[i+1]+=n;p[i+2]+=n;}
+    x.putImageData(d,0,0);
+  }
+  function weave(c,alpha){
+    const x=cx(c);x.globalAlpha=alpha;
+    x.strokeStyle="#000";x.lineWidth=1;
+    for(let y=0;y<c.height;y+=3){x.beginPath();x.moveTo(0,y);x.lineTo(c.width,y);x.stroke();}
+    x.strokeStyle="rgba(255,255,255,.6)";
+    for(let xx=0;xx<c.width;xx+=3){x.beginPath();x.moveTo(xx,0);x.lineTo(xx,c.height);x.stroke();}
+    x.globalAlpha=1;
+  }
+  function scratches(c,n){
+    const x=cx(c);x.strokeStyle="rgba(235,228,214,.28)";x.lineWidth=.8;
+    for(let i=0;i<n;i++){
+      const sx=Math.random()*c.width;x.beginPath();x.moveTo(sx,Math.random()*c.height*.3);
+      x.quadraticCurveTo(sx+(Math.random()-.5)*30,c.height*.5,sx+(Math.random()-.5)*20,c.height);
+      x.stroke();
+    }
+  }
+  function rings(x,cx0,cy0,rs){rs.forEach(r=>{x.beginPath();x.arc(cx0,cy0,r,0,7);x.stroke();});}
+  function frame(c,kind){
+    const x=cx(c),W=c.width,H=c.height;
+    if(kind==="gold"||kind==="baroque"){
+      const fw=Math.round(W*.05);
+      x.lineJoin="miter";
+      [[fw*1.25,"#0d0a05"],[fw*1.0,"#6d5522"],[fw*.55,"#c9a24b"],[fw*.28,"#8a6a2f"]].forEach(([w2,col])=>{
+        x.strokeStyle=col;x.lineWidth=w2;x.strokeRect(fw*.625,fw*.625,W-fw*1.25,H-fw*1.25);
+      });
+      x.strokeStyle="#e8d18a";x.lineWidth=1.2;x.strokeRect(fw*1.15,fw*1.15,W-fw*2.3,H-fw*2.3);
+      if(kind==="baroque"){
+        x.strokeStyle="#e8d18a";x.lineWidth=1.6;
+        const pts=[[fw*1.2,fw*1.2],[W-fw*1.2,fw*1.2],[fw*1.2,H-fw*1.2],[W-fw*1.2,H-fw*1.2]];
+        pts.forEach(([px,py])=>{rings(x,px,py,[10,16,22]);
+          x.save();x.translate(px,py);x.rotate(Math.PI/4);x.fillStyle="#c9a24b";x.fillRect(-7,-7,14,14);x.restore();});
+      }
+    }else if(kind==="metal"){
+      const fw=Math.round(W*.045);
+      [[fw*1.2,"#262a31"],[fw*.85,"#6a6f78"],[fw*.5,"#9aa2ad"],[fw*.22,"#3d4149"]].forEach(([w2,col])=>{
+        x.strokeStyle=col;x.lineWidth=w2;x.strokeRect(fw*.6,fw*.6,W-fw*1.2,H-fw*1.2);
+      });
+      x.fillStyle="#c7ccd4";x.strokeStyle="#2b2f36";
+      const rp=fw*.9;
+      [[rp,rp],[W/2,rp],[W-rp,rp],[rp,H/2],[W-rp,H/2],[rp,H-rp],[W/2,H-rp],[W-rp,H-rp]].forEach(([px,py])=>{
+        x.beginPath();x.arc(px,py,4.5,0,7);x.fill();x.stroke();
+      });
+    }else if(kind==="deco"){
+      const m=Math.round(W*.035);
+      x.strokeStyle="#0c0e12";x.lineWidth=m;x.strokeRect(m/2,m/2,W-m,H-m);
+      x.strokeStyle="#b9c2cf";x.lineWidth=1.4;x.strokeRect(m+6,m+6,W-2*m-12,H-2*m-12);
+      x.strokeRect(m+13,m+13,W-2*m-26,H-2*m-26);
+      x.strokeStyle="#b9c2cf";x.lineWidth=1;
+      [[m+6,m+6,1,1],[W-m-6,m+6,-1,1],[m+6,H-m-6,1,-1],[W-m-6,H-m-6,-1,-1]].forEach(([px,py,dx,dy])=>{
+        x.beginPath();x.moveTo(px,py+dy*26);x.lineTo(px,py);x.lineTo(px+dx*26,py);x.stroke();
+      });
+    }
+  }
+  function signature(c){
+    const x=cx(c),m=Math.round(c.width*.075);
+    x.strokeStyle="rgba(35,22,10,.6)";x.lineWidth=1.8;x.lineCap="round";
+    x.beginPath();let px=c.width-m,py=c.height-m;
+    x.moveTo(px,py);
+    for(let i=0;i<4;i++){
+      x.quadraticCurveTo(px-30,py-(10+Math.random()*26),px-60,py+(Math.random()*10-5));
+      px-=60;
+    }
+    x.stroke();
+    x.beginPath();x.arc(c.width-m-15,c.height-m+6,3,0,7);x.stroke();
+  }
+
+  async function compose(){
+    if(!srcImg||busy)return;
+    busy=true;go.disabled=true;$("#pBusy").style.display="block";
+    await new Promise(r=>setTimeout(r,340));
+    try{
+      const key=$('input[name="pstyle"]:checked').value, S=STYLES[key], o=S.ops;
+      const W=960,H=1200;
+      let c=coverDraw(srcImg,W,H);
+      if(o.blur)c=blurMix(c,o.blur);
+      let lutR,lutG,lutB,mapFn=null;
+      if(o.lut){lutR=lut(o.lut.r[0],o.lut.r[1]);lutG=lut(o.lut.g[0],o.lut.g[1]);lutB=lut(o.lut.b[0],o.lut.b[1]);}
+      if(o.map==="dag"){const curve=l=>clamp((l-128)*1.35+128,0,255);mapFn=l=>mixHex("#191410","#ead9bd",curve(l)/255);}
+      if(o.map==="deco"){const curve=l=>clamp((l-128)*1.18+132,0,255);mapFn=l=>mixHex("#12151d","#dfe6ef",curve(l)/255);}
+      pixelPass(c,{lutR,lutG,lutB,poster:o.poster,mapFn});
+      vignette(c,o.vign[0],o.vign[1]);
+      if(o.weave)weave(c,o.weave);
+      grain(c,o.grain);
+      if(o.scratch)scratches(c,o.scratch);
+      frame(c,o.frame);
+      if(o.sig)signature(c);
+      $("#pCanvas").width=W;$("#pCanvas").height=H;
+      cx($("#pCanvas")).drawImage(c,0,0);
+      const name=($("#pName").value.trim()||"Anônimo Ilustre");
+      $("#pPlateTitle").textContent=`«${name}»`;
+      $("#pPlateMeta").textContent=S.meta;
+      $("#pPlateNote").textContent=S.nota;
+      $("#pEmpty").style.display="none";$("#pOut").style.display="block";
+      $("#pOut").scrollIntoView({behavior:reduced?"auto":"smooth",block:"nearest"});
+      toast("Retrato composto — estilização pura, nenhum rosto sintetizado.");
+    }catch(err){console.error(err);toast("Falha ao compor o retrato.",true);}
+    $("#pBusy").style.display="none";go.disabled=false;busy=false;
+  }
+  go.addEventListener("click",compose);
+  $("#pName").addEventListener("keydown",e=>{if(e.key==="Enter")compose();});
+
+  $("#pDownload").addEventListener("click",()=>{
+    $("#pCanvas").toBlob(b=>{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(b);
+      a.download="retrato-de-epoca.png";a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+      toast("Retrato salvo em downloads.");
+    },"image/png");
+  });
+})();
+
+})();
+</script>
+</body>
+</html>
